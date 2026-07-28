@@ -1,0 +1,240 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../server/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AssetCondition {
+  GOOD
+  UNDER_REPAIR
+  DAMAGED
+}
+
+enum AssetCategory {
+  TLS
+  EQP
+  ELK
+}
+
+enum Criticality {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum ActivityType {
+  REGISTERED
+  UPDATED
+  CONDITION_CHANGED
+  BORROWED
+  RETURNED
+}
+
+enum UserRole {
+  SUPER_USER
+  ADMIN
+}
+
+enum StockItemStatus {
+  UNCLASSIFIED
+  CONSUMABLE
+}
+
+enum StockMovementType {
+  IMPORT
+  ISSUE
+  TRANSFER
+  ADJUSTMENT
+}
+
+model Department {
+  id             String          @id @default(uuid()) @db.Uuid
+  code           String          @unique @db.VarChar(20)
+  name           String          @unique @db.VarChar(100)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  ownedAssets    Asset[]         @relation("OwnerDepartment")
+  borrowedAssets Loan[]          @relation("BorrowerDepartment")
+  stockMovements StockMovement[]
+}
+
+model Cabinet {
+  id        String          @id @default(uuid()) @db.Uuid
+  code      String          @unique @db.VarChar(20)
+  name      String          @db.VarChar(100)
+  active    Boolean         @default(true)
+  isStaging Boolean         @default(false)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  assets    Asset[]
+  stocks    CabinetStock[]
+  movements StockMovement[]
+
+  @@index([active, isStaging])
+}
+
+model Asset {
+  id                String         @id @default(uuid()) @db.Uuid
+  assetTag          String         @unique @db.VarChar(50)
+  name              String         @db.VarChar(150)
+  category          AssetCategory
+  manufacturer      String?        @db.VarChar(100)
+  model             String?        @db.VarChar(100)
+  serialNumber      String?        @db.VarChar(100)
+  ownerDepartmentId String         @db.Uuid
+  cabinetId         String?        @db.Uuid
+  location          String         @db.VarChar(150)
+  acquiredAt        DateTime?      @db.Date
+  criticality       Criticality    @default(MEDIUM)
+  condition         AssetCondition @default(GOOD)
+  notes             String?        @db.Text
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  ownerDepartment   Department     @relation("OwnerDepartment", fields: [ownerDepartmentId], references: [id], onDelete: Restrict)
+  cabinet           Cabinet?       @relation(fields: [cabinetId], references: [id], onDelete: SetNull)
+  loans             Loan[]
+  activities        Activity[]
+
+  @@index([condition])
+  @@index([category])
+  @@index([ownerDepartmentId])
+  @@index([cabinetId])
+  @@index([location])
+  @@index([updatedAt])
+}
+
+model Loan {
+  id                   String     @id @default(uuid()) @db.Uuid
+  assetId              String     @db.Uuid
+  borrowerDepartmentId String     @db.Uuid
+  responsiblePerson    String     @db.VarChar(150)
+  purpose              String     @db.VarChar(250)
+  checkedOutAt         DateTime   @db.Date
+  returnedAt           DateTime?  @db.Date
+  destinationLocation  String?    @db.VarChar(150)
+  notes                String?    @db.Text
+  returnNotes          String?    @db.Text
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+  asset                Asset      @relation(fields: [assetId], references: [id], onDelete: Restrict)
+  borrowerDepartment   Department @relation("BorrowerDepartment", fields: [borrowerDepartmentId], references: [id], onDelete: Restrict)
+
+  @@index([assetId, returnedAt])
+  @@index([borrowerDepartmentId])
+}
+
+model AssetCodeCounter {
+  year       Int      @id
+  nextNumber Int
+  updatedAt  DateTime @updatedAt
+}
+
+model StockItem {
+  id            String          @id @default(uuid()) @db.Uuid
+  sourceKey     String          @unique @db.VarChar(100)
+  sourceRow     Int
+  sourceStock   Int
+  name          String          @db.VarChar(200)
+  supplier      String?         @db.VarChar(100)
+  specification String?         @db.Text
+  status        StockItemStatus @default(UNCLASSIFIED)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  stocks        CabinetStock[]
+  movements     StockMovement[]
+
+  @@index([status, name])
+}
+
+model CabinetStock {
+  cabinetId    String    @db.Uuid
+  itemId       String    @db.Uuid
+  goodQuantity Int       @default(0)
+  badQuantity  Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  cabinet      Cabinet   @relation(fields: [cabinetId], references: [id], onDelete: Restrict)
+  item         StockItem @relation(fields: [itemId], references: [id], onDelete: Restrict)
+
+  @@id([cabinetId, itemId])
+  @@index([itemId])
+}
+
+model StockMovement {
+  id                   String            @id @default(uuid()) @db.Uuid
+  type                 StockMovementType
+  itemId               String            @db.Uuid
+  cabinetId            String            @db.Uuid
+  goodDelta            Int               @default(0)
+  badDelta             Int               @default(0)
+  responsiblePerson    String?           @db.VarChar(150)
+  borrowerDepartmentId String?           @db.Uuid
+  purpose              String?           @db.VarChar(250)
+  destinationLocation  String?           @db.VarChar(150)
+  actorName            String            @db.VarChar(150)
+  sourceKey            String?           @unique @db.VarChar(120)
+  metadata             Json?
+  createdAt            DateTime          @default(now())
+  item                 StockItem         @relation(fields: [itemId], references: [id], onDelete: Restrict)
+  cabinet              Cabinet           @relation(fields: [cabinetId], references: [id], onDelete: Restrict)
+  borrowerDepartment   Department?       @relation(fields: [borrowerDepartmentId], references: [id], onDelete: Restrict)
+
+  @@index([itemId, createdAt])
+  @@index([cabinetId, createdAt])
+  @@index([type, createdAt])
+  @@index([borrowerDepartmentId])
+}
+
+model CheckoutRequest {
+  id          String   @id @db.Uuid
+  fingerprint String   @db.Char(64)
+  result      Json
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+model Activity {
+  id        String       @id @default(uuid()) @db.Uuid
+  assetId   String       @db.Uuid
+  type      ActivityType
+  actorName String       @default("Current Operator") @db.VarChar(150)
+  summary   String       @db.VarChar(300)
+  metadata  Json?
+  createdAt DateTime     @default(now())
+  asset     Asset        @relation(fields: [assetId], references: [id], onDelete: Restrict)
+
+  @@index([assetId, createdAt])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  name         String    @db.VarChar(150)
+  username     String    @unique @db.VarChar(32)
+  passwordHash String    @db.VarChar(255)
+  role         UserRole
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+
+  @@index([role])
+  @@index([active])
+}
+
+model Session {
+  id        String   @id @default(uuid()) @db.Uuid
+  tokenHash String   @unique @db.Char(64)
+  userId    String   @db.Uuid
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}

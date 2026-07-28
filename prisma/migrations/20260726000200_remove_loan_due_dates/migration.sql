@@ -1,0 +1,3 @@
+DROP INDEX IF EXISTS "Loan_dueAt_idx";
+ALTER TABLE "Loan" DROP CONSTRAINT IF EXISTS "Loan_dueAt_check";
+ALTER TABLE "Loan" DROP COLUMN "dueAt";
