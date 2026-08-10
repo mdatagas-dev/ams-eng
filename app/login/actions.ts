@@ -29,7 +29,10 @@ export async function login(
   const cookieStore = await cookies()
   cookieStore.set(SESSION_COOKIE, result.token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure:
+      process.env.COOKIE_SECURE === undefined
+        ? process.env.NODE_ENV === "production"
+        : process.env.COOKIE_SECURE === "true",
     sameSite: "lax",
     path: "/",
     expires: new Date(result.expiresAt),

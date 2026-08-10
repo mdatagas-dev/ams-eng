@@ -1,9 +1,0 @@
-node_modules
-.next
-dist
-server/generated
-coverage
-.playwright-mcp
-.env
-*.tsbuildinfo
-.git
