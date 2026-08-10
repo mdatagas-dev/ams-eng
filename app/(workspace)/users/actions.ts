@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache"
 import { apiSend } from "@/lib/api"
 import type { ActionState } from "@/lib/action-state"
 import type { ManagedUser } from "@/lib/auth-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export async function createUser(
   _previous: ActionState,
@@ -18,14 +20,16 @@ export async function createUser(
       role: formData.get("role"),
     })
   } catch (error) {
+    const t = getDictionary(await getLang())
     return {
       status: "error",
-      message: error instanceof Error ? error.message : "Unable to create user",
+      message:
+        error instanceof Error ? error.message : t.unableToCreateUser,
     }
   }
 
   revalidatePath("/users")
-  return { status: "success", message: "User account created" }
+  return { status: "success", message: (await getDictionary(await getLang())).userCreated }
 }
 
 export async function setUserActive(id: string, active: boolean) {

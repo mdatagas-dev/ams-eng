@@ -16,8 +16,16 @@ import {
 } from "@/components/ui/empty"
 import { activityLabels, formatDateTime } from "@/lib/asset-format"
 import type { Activity } from "@/lib/asset-types"
+import { getDictionary } from "@/lib/i18n"
+import { getLang } from "@/lib/get-lang"
 
-export function ActivityFeed({ activities }: { activities: Activity[] }) {
+export async function ActivityFeed({
+  activities,
+}: {
+  activities: Activity[]
+}) {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   if (!activities.length) {
     return (
       <Empty className="border">
@@ -25,10 +33,8 @@ export function ActivityFeed({ activities }: { activities: Activity[] }) {
           <EmptyMedia variant="icon">
             <RiHistoryLine />
           </EmptyMedia>
-          <EmptyTitle>No activity recorded</EmptyTitle>
-          <EmptyDescription>
-            Changes to assets will appear here.
-          </EmptyDescription>
+          <EmptyTitle>{t.noActivity}</EmptyTitle>
+          <EmptyDescription>{t.noActivityDesc}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -54,12 +60,14 @@ export function ActivityFeed({ activities }: { activities: Activity[] }) {
             </div>
             <div className="min-w-0 flex-1 pt-0.5">
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline">{activityLabels[activity.type]}</Badge>
+                <Badge variant="outline">
+                  {activityLabels(lang)[activity.type]}
+                </Badge>
                 <time
                   dateTime={activity.createdAt}
                   className="font-mono text-[0.6875rem] text-muted-foreground"
                 >
-                  {formatDateTime(activity.createdAt)}
+                  {formatDateTime(activity.createdAt, lang)}
                 </time>
               </div>
               <p className="mt-1.5 text-sm font-medium">
@@ -75,7 +83,7 @@ export function ActivityFeed({ activities }: { activities: Activity[] }) {
                 )}
               </p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                by {activity.actorName}
+                {t.byActor.replace("{actor}", activity.actorName)}
               </p>
             </div>
           </li>

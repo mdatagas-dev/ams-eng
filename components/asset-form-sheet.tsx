@@ -1,9 +1,10 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useState } from "react"
 import { RiAddLine, RiEditLine, RiLoaderLine } from "@remixicon/react"
 
 import { createAsset, updateAsset } from "@/app/(workspace)/actions"
+import { useI18n } from "@/components/i18n-provider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
@@ -47,16 +48,6 @@ import type {
   Department,
 } from "@/lib/asset-types"
 
-const categories = Object.entries(categoryLabels) as Array<
-  [AssetCategory, string]
->
-const conditions = Object.entries(conditionLabels) as Array<
-  [AssetCondition, string]
->
-const criticalities = Object.entries(criticalityLabels) as Array<
-  [Criticality, string]
->
-
 export function AssetFormSheet({
   departments,
   cabinets,
@@ -66,11 +57,24 @@ export function AssetFormSheet({
   cabinets: Cabinet[]
   asset?: Asset
 }) {
+  const { lang, t } = useI18n()
   const action = asset ? updateAsset.bind(null, asset.id) : createAsset
+  const [category, setCategory] = useState<AssetCategory>(
+    asset?.category ?? "TLS"
+  )
   const [state, formAction, pending] = useActionState(
     action,
     initialActionState
   )
+  const categories = Object.entries(categoryLabels(lang)) as Array<
+    [AssetCategory, string]
+  >
+  const conditions = Object.entries(conditionLabels(lang)) as Array<
+    [AssetCondition, string]
+  >
+  const criticalities = Object.entries(criticalityLabels(lang)) as Array<
+    [Criticality, string]
+  >
   const departmentItems = Object.fromEntries(
     departments.map((department) => [department.id, department.name])
   )
@@ -94,17 +98,15 @@ export function AssetFormSheet({
             ) : (
               <RiAddLine data-icon="inline-start" />
             )}
-            {asset ? "Edit asset" : "Register asset"}
+            {asset ? t("editAsset") : t("registerAsset")}
           </Button>
         }
       />
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>{asset ? "Edit asset" : "Register asset"}</SheetTitle>
+          <SheetTitle>{asset ? t("editAsset") : t("registerAsset")}</SheetTitle>
           <SheetDescription>
-            {asset
-              ? "Update equipment identity and operational information."
-              : "Add equipment to the shared Engineering and IT register."}
+            {asset ? t("editAssetDesc") : t("registerAssetDesc")}
           </SheetDescription>
         </SheetHeader>
         <form
@@ -120,19 +122,17 @@ export function AssetFormSheet({
               <div className="grid gap-4 sm:grid-cols-2">
                 {asset ? (
                   <Field>
-                    <FieldLabel htmlFor="assetTag">Asset ID</FieldLabel>
+                    <FieldLabel htmlFor="assetTag">{t("assetId")}</FieldLabel>
                     <Input id="assetTag" value={asset.assetTag} readOnly />
                   </Field>
                 ) : (
                   <Field>
-                    <FieldLabel>Asset ID</FieldLabel>
-                    <FieldDescription>
-                      Generated automatically after registration.
-                    </FieldDescription>
+                    <FieldLabel>{t("assetId")}</FieldLabel>
+                    <FieldDescription>{t("assetIdAuto")}</FieldDescription>
                   </Field>
                 )}
                 <Field>
-                  <FieldLabel htmlFor="name">Asset name</FieldLabel>
+                  <FieldLabel htmlFor="name">{t("assetName")}</FieldLabel>
                   <Input
                     id="name"
                     name="name"
@@ -143,18 +143,23 @@ export function AssetFormSheet({
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="asset-category">Category</FieldLabel>
+                  <FieldLabel htmlFor="asset-category">
+                    {t("category")}
+                  </FieldLabel>
                   {asset ? (
                     <Input
                       id="asset-category"
-                      value={categoryLabels[asset.category]}
+                      value={categoryLabels(lang)[asset.category]}
                       readOnly
                     />
                   ) : (
                     <Select
-                      items={categoryLabels}
+                      items={categoryLabels(lang)}
                       name="category"
                       defaultValue="TLS"
+                      onValueChange={(value) =>
+                        setCategory((value as AssetCategory) ?? "TLS")
+                      }
                       required
                     >
                       <SelectTrigger id="asset-category" className="w-full">
@@ -174,7 +179,7 @@ export function AssetFormSheet({
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="owner-department">
-                    Owner department
+                    {t("ownerDepartment")}
                   </FieldLabel>
                   <Select
                     items={departmentItems}
@@ -199,30 +204,32 @@ export function AssetFormSheet({
                   </Select>
                 </Field>
               </div>
+              {category !== "UNIT_SNI" ? (
+                <Field>
+                  <FieldLabel htmlFor="asset-cabinet">{t("cabinet")}</FieldLabel>
+                  <Select
+                    items={cabinetItems}
+                    name="cabinetId"
+                    defaultValue={asset?.cabinetId ?? availableCabinets[0]?.id}
+                    required
+                  >
+                    <SelectTrigger id="asset-cabinet" className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {availableCabinets.map((cabinet) => (
+                          <SelectItem key={cabinet.id} value={cabinet.id}>
+                            {cabinet.code} / {cabinet.name}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              ) : null}
               <Field>
-                <FieldLabel htmlFor="asset-cabinet">Cabinet</FieldLabel>
-                <Select
-                  items={cabinetItems}
-                  name="cabinetId"
-                  defaultValue={asset?.cabinetId ?? availableCabinets[0]?.id}
-                  required
-                >
-                  <SelectTrigger id="asset-cabinet" className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      {availableCabinets.map((cabinet) => (
-                        <SelectItem key={cabinet.id} value={cabinet.id}>
-                          {cabinet.code} / {cabinet.name}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="location">Home location / area</FieldLabel>
+                <FieldLabel htmlFor="location">{t("homeLocation")}</FieldLabel>
                 <Input
                   id="location"
                   name="location"
@@ -232,7 +239,9 @@ export function AssetFormSheet({
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="manufacturer">Manufacturer</FieldLabel>
+                  <FieldLabel htmlFor="manufacturer">
+                    {t("manufacturer")}
+                  </FieldLabel>
                   <Input
                     id="manufacturer"
                     name="manufacturer"
@@ -240,7 +249,7 @@ export function AssetFormSheet({
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="model">Model</FieldLabel>
+                  <FieldLabel htmlFor="model">{t("model")}</FieldLabel>
                   <Input
                     id="model"
                     name="model"
@@ -250,7 +259,9 @@ export function AssetFormSheet({
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
-                  <FieldLabel htmlFor="serialNumber">Serial number</FieldLabel>
+                  <FieldLabel htmlFor="serialNumber">
+                    {t("serialNumber")}
+                  </FieldLabel>
                   <Input
                     id="serialNumber"
                     name="serialNumber"
@@ -258,7 +269,7 @@ export function AssetFormSheet({
                   />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="acquiredAt">Acquisition date</FieldLabel>
+                  <FieldLabel htmlFor="acquiredAt">{t("acquiredAt")}</FieldLabel>
                   <Input
                     id="acquiredAt"
                     name="acquiredAt"
@@ -270,10 +281,10 @@ export function AssetFormSheet({
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field>
                   <FieldLabel htmlFor="asset-criticality">
-                    Criticality
+                    {t("criticality")}
                   </FieldLabel>
                   <Select
-                    items={criticalityLabels}
+                    items={criticalityLabels(lang)}
                     name="criticality"
                     defaultValue={asset?.criticality ?? "MEDIUM"}
                     required
@@ -295,10 +306,10 @@ export function AssetFormSheet({
                 {!asset ? (
                   <Field>
                     <FieldLabel htmlFor="initial-condition">
-                      Initial condition
+                      {t("initialCondition")}
                     </FieldLabel>
                     <Select
-                      items={conditionLabels}
+                      items={conditionLabels(lang)}
                       name="condition"
                       defaultValue="GOOD"
                       required
@@ -320,7 +331,7 @@ export function AssetFormSheet({
                 ) : null}
               </div>
               <Field>
-                <FieldLabel htmlFor="notes">Notes</FieldLabel>
+                <FieldLabel htmlFor="notes">{t("notes")}</FieldLabel>
                 <Textarea
                   id="notes"
                   name="notes"
@@ -346,13 +357,13 @@ export function AssetFormSheet({
                 />
               ) : null}
               {pending
-                ? "Saving..."
+                ? t("saving")
                 : asset
-                  ? "Save changes"
-                  : "Register asset"}
+                  ? t("saveChanges")
+                  : t("registerAsset")}
             </Button>
             <SheetClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {t("cancel")}
             </SheetClose>
           </SheetFooter>
         </form>

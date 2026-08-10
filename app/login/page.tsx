@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation"
 
+import { LanguageToggle } from "@/components/language-toggle"
 import { LoginForm } from "@/components/login-form"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { ApiRequestError } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export default async function LoginPage() {
+  const t = getDictionary(await getLang())
   let signedIn = false
   try {
     await getCurrentUser()
@@ -17,7 +21,8 @@ export default async function LoginPage() {
 
   return (
     <main className="relative grid min-h-svh bg-background lg:grid-cols-[1fr_32rem]">
-      <div className="absolute top-3 right-3 z-10">
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1">
+        <LanguageToggle />
         <ThemeToggle />
       </div>
       <section className="hidden border-r bg-sidebar p-12 text-sidebar-foreground lg:flex lg:flex-col lg:justify-between">
@@ -26,12 +31,11 @@ export default async function LoginPage() {
             Engineering + IT
           </p>
           <h1 className="mt-6 max-w-xl text-5xl leading-tight font-semibold tracking-tight">
-            Equipment accountability from workshop to return.
+            {t.loginHeroTitle}
           </h1>
         </div>
         <p className="max-w-md text-sm leading-relaxed text-sidebar-foreground/60">
-          Condition, custody, and immutable asset history in one operating
-          console.
+          {t.loginHeroDescription}
         </p>
       </section>
       <section className="flex items-center justify-center p-6 sm:p-10">

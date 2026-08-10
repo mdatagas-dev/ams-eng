@@ -6,16 +6,24 @@ import { redirect } from "next/navigation"
 import { apiSend } from "@/lib/api"
 import type { ActionState } from "@/lib/action-state"
 import type { Asset, Loan } from "@/lib/asset-types"
+import { getDictionary, type MessageKey } from "@/lib/i18n"
+import { getLang } from "@/lib/get-lang"
 
 function body(formData: FormData, fields: string[]) {
   return Object.fromEntries(fields.map((field) => [field, formData.get(field)]))
 }
 
-function failed(error: unknown): ActionState {
+async function failed(error: unknown): Promise<ActionState> {
+  const t = getDictionary(await getLang())
   return {
     status: "error",
-    message: error instanceof Error ? error.message : "Request failed",
+    message: error instanceof Error ? error.message : t.requestFailed,
   }
+}
+
+async function success(key: MessageKey): Promise<ActionState> {
+  const t = getDictionary(await getLang())
+  return { status: "success", message: t[key] }
 }
 
 export async function createAsset(
@@ -82,7 +90,7 @@ export async function updateAsset(
   revalidatePath("/")
   revalidatePath("/assets")
   revalidatePath(`/assets/${id}`)
-  return { status: "success", message: "Asset details updated" }
+  return success("assetDetailsUpdated")
 }
 
 export async function changeCondition(
@@ -104,7 +112,7 @@ export async function changeCondition(
   revalidatePath("/assets")
   revalidatePath(`/assets/${id}`)
   revalidatePath("/history")
-  return { status: "success", message: "Asset condition updated" }
+  return success("assetConditionUpdated")
 }
 
 export async function borrowAsset(
@@ -134,7 +142,7 @@ export async function borrowAsset(
   revalidatePath(`/assets/${id}`)
   revalidatePath("/borrowings")
   revalidatePath("/history")
-  return { status: "success", message: "Asset checked out" }
+  return success("assetCheckedOut")
 }
 
 export async function returnAsset(
@@ -158,5 +166,5 @@ export async function returnAsset(
   revalidatePath(`/assets/${assetId}`)
   revalidatePath("/borrowings")
   revalidatePath("/history")
-  return { status: "success", message: "Asset returned" }
+  return success("assetReturned")
 }

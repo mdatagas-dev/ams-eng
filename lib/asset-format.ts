@@ -1,3 +1,8 @@
+import {
+  getDictionary,
+  type Language,
+  type MessageKey,
+} from "./i18n"
 import type {
   ActivityType,
   AssetCategory,
@@ -5,52 +10,87 @@ import type {
   Criticality,
 } from "./asset-types"
 
-export const conditionLabels: Record<AssetCondition, string> = {
-  GOOD: "Baik",
-  UNDER_REPAIR: "Dalam Perbaikan",
-  DAMAGED: "Rusak",
+export function conditionLabels(lang: Language) {
+  const d = getDictionary(lang)
+  return {
+    GOOD: d.conditionGood,
+    UNDER_REPAIR: d.conditionUnderRepair,
+    DAMAGED: d.conditionDamaged,
+  } as Record<AssetCondition, string>
 }
 
-export const categoryLabels: Record<AssetCategory, string> = {
-  TLS: "Tools",
-  EQP: "Equipment",
-  ELK: "Electronics",
+export function categoryLabels(lang: Language) {
+  const d = getDictionary(lang)
+  return {
+    TLS: d.categoryTls,
+    EQP: d.categoryEqp,
+    ELK: d.categoryElk,
+    UNIT_SNI: d.categoryUnitSni,
+  } as Record<AssetCategory, string>
 }
 
-export const criticalityLabels: Record<Criticality, string> = {
-  LOW: "Low",
-  MEDIUM: "Medium",
-  HIGH: "High",
+export function criticalityLabels(lang: Language) {
+  const d = getDictionary(lang)
+  return {
+    LOW: d.criticalityLow,
+    MEDIUM: d.criticalityMedium,
+    HIGH: d.criticalityHigh,
+  } as Record<Criticality, string>
 }
 
-export const activityLabels: Record<ActivityType, string> = {
-  REGISTERED: "Registered",
-  UPDATED: "Updated",
-  CONDITION_CHANGED: "Condition changed",
-  BORROWED: "Borrowed",
-  RETURNED: "Returned",
+export function activityLabels(lang: Language) {
+  const d = getDictionary(lang)
+  return {
+    REGISTERED: d.activityRegistered,
+    UPDATED: d.activityUpdated,
+    CONDITION_CHANGED: d.activityConditionChanged,
+    BORROWED: d.activityBorrowed,
+    RETURNED: d.activityReturned,
+  } as Record<ActivityType, string>
 }
 
-const dateFormatter = new Intl.DateTimeFormat("en-ID", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  timeZone: "UTC",
-})
-
-const dateTimeFormatter = new Intl.DateTimeFormat("en-ID", {
-  day: "2-digit",
-  month: "short",
-  year: "numeric",
-  hour: "2-digit",
-  minute: "2-digit",
-  timeZone: "Asia/Jakarta",
-})
-
-export function formatDate(value: string | Date | null) {
-  return value ? dateFormatter.format(new Date(value)) : "Not recorded"
+const dateFormatters = {
+  en: new Intl.DateTimeFormat("en-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }),
+  id: new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }),
 }
 
-export function formatDateTime(value: string | Date) {
-  return dateTimeFormatter.format(new Date(value))
+const dateTimeFormatters = {
+  en: new Intl.DateTimeFormat("en-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }),
+  id: new Intl.DateTimeFormat("id-ID", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }),
 }
+
+export function formatDate(value: string | Date | null, lang: Language) {
+  return value
+    ? dateFormatters[lang].format(new Date(value))
+    : getDictionary(lang).notRecorded
+}
+
+export function formatDateTime(value: string | Date, lang: Language) {
+  return dateTimeFormatters[lang].format(new Date(value))
+}
+
+export type { MessageKey }

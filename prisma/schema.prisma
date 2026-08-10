@@ -17,6 +17,7 @@ enum AssetCategory {
   TLS
   EQP
   ELK
+  UNIT_SNI
 }
 
 enum Criticality {

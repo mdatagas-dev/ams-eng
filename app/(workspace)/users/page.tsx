@@ -17,8 +17,12 @@ import {
 import { apiGet } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 import type { ManagedUser } from "@/lib/auth-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export default async function UsersPage() {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   const currentUser = await getCurrentUser()
   if (currentUser.role !== "SUPER_USER") redirect("/")
   const users = await apiGet<ManagedUser[]>("/users")
@@ -26,23 +30,23 @@ export default async function UsersPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Access control"
-        title="User accounts"
-        description="Create accounts and control access to the asset management workspace."
+        eyebrow={t.usersEyebrow}
+        title={t.usersTitle}
+        description={t.usersDescription}
         actions={<CreateUserSheet />}
       />
       <Card>
         <CardHeader>
-          <CardTitle>{users.length} accounts</CardTitle>
+          <CardTitle>{t.accounts.replace("{n}", String(users.length))}</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead>{t.user}</TableHead>
+                <TableHead>{t.role}</TableHead>
+                <TableHead>{t.status}</TableHead>
+                <TableHead className="text-right">{t.actions}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -58,14 +62,16 @@ export default async function UsersPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {user.role === "SUPER_USER" ? "Super user" : "Admin"}
+                        {user.role === "SUPER_USER"
+                          ? t.roleSuperUser
+                          : t.roleAdmin}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <Badge
                         variant={user.active ? "secondary" : "destructive"}
                       >
-                        {user.active ? "Active" : "Inactive"}
+                        {user.active ? t.active : t.inactive}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -78,7 +84,7 @@ export default async function UsersPage() {
                           size="sm"
                           disabled={self}
                         >
-                          {user.active ? "Deactivate" : "Activate"}
+                          {user.active ? t.deactivate : t.activate}
                         </Button>
                       </form>
                     </TableCell>

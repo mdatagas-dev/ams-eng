@@ -4,6 +4,7 @@ import { startTransition } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { RiCloseLine, RiSearchLine } from "@remixicon/react"
 
+import { useI18n } from "@/components/i18n-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -21,25 +22,25 @@ import type {
   Department,
 } from "@/lib/asset-types"
 
-const conditions = Object.entries(conditionLabels) as Array<
-  [AssetCondition, string]
->
-const categories = Object.entries(categoryLabels) as Array<
-  [AssetCategory, string]
->
-const conditionItems = { all: "All conditions", ...conditionLabels }
-const categoryItems = { all: "All categories", ...categoryLabels }
-const custodyItems = {
-  all: "All custody",
-  available: "Available",
-  borrowed: "Borrowed",
-}
-
 export function AssetFilters({ departments }: { departments: Department[] }) {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { lang, t } = useI18n()
+  const conditions = Object.entries(conditionLabels(lang)) as Array<
+    [AssetCondition, string]
+  >
+  const categories = Object.entries(categoryLabels(lang)) as Array<
+    [AssetCategory, string]
+  >
+  const conditionItems = { all: t("allConditions"), ...conditionLabels(lang) }
+  const categoryItems = { all: t("allCategories"), ...categoryLabels(lang) }
+  const custodyItems = {
+    all: t("allCustody"),
+    available: t("available"),
+    borrowed: t("tableBorrowed"),
+  }
   const departmentItems = {
-    all: "All departments",
+    all: t("allDepartments"),
     ...Object.fromEntries(
       departments.map((department) => [department.id, department.name])
     ),
@@ -65,12 +66,12 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
           key={searchParams.get("search") ?? ""}
           name="search"
           defaultValue={searchParams.get("search") ?? ""}
-          placeholder="Search tag, asset, model, or serial..."
-          aria-label="Search assets"
+          placeholder={t("filterPlaceholder")}
+          aria-label={t("filterSearchAria")}
         />
         <Button type="submit" variant="secondary" size="icon">
           <RiSearchLine />
-          <span className="sr-only">Search</span>
+          <span className="sr-only">{t("search")}</span>
         </Button>
       </form>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 xl:flex">
@@ -81,13 +82,13 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
         >
           <SelectTrigger
             className="w-full xl:w-44"
-            aria-label="Filter by condition"
+            aria-label={t("filterByCondition")}
           >
-            <SelectValue placeholder="Condition" />
+            <SelectValue placeholder={t("condition")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="all">All conditions</SelectItem>
+              <SelectItem value="all">{t("allConditions")}</SelectItem>
               {conditions.map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
@@ -103,13 +104,13 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
         >
           <SelectTrigger
             className="w-full xl:w-40"
-            aria-label="Filter by category"
+            aria-label={t("filterByCategory")}
           >
-            <SelectValue placeholder="Category" />
+            <SelectValue placeholder={t("category")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("allCategories")}</SelectItem>
               {categories.map(([value, label]) => (
                 <SelectItem key={value} value={value}>
                   {label}
@@ -125,13 +126,13 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
         >
           <SelectTrigger
             className="w-full xl:w-44"
-            aria-label="Filter by department"
+            aria-label={t("filterByDepartment")}
           >
-            <SelectValue placeholder="Department" />
+            <SelectValue placeholder={t("department")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="all">All departments</SelectItem>
+              <SelectItem value="all">{t("allDepartments")}</SelectItem>
               {departments.map((department) => (
                 <SelectItem key={department.id} value={department.id}>
                   {department.name}
@@ -147,15 +148,15 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
         >
           <SelectTrigger
             className="w-full xl:w-36"
-            aria-label="Filter by custody"
+            aria-label={t("filterByCustody")}
           >
-            <SelectValue placeholder="Custody" />
+            <SelectValue placeholder={t("custody")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="all">All custody</SelectItem>
-              <SelectItem value="available">Available</SelectItem>
-              <SelectItem value="borrowed">Borrowed</SelectItem>
+              <SelectItem value="all">{t("allCustody")}</SelectItem>
+              <SelectItem value="available">{t("available")}</SelectItem>
+              <SelectItem value="borrowed">{t("tableBorrowed")}</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
@@ -167,7 +168,7 @@ export function AssetFilters({ departments }: { departments: Department[] }) {
           onClick={() => router.replace("/assets")}
         >
           <RiCloseLine data-icon="inline-start" />
-          Clear
+          {t("clear")}
         </Button>
       ) : null}
     </div>

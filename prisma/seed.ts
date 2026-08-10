@@ -3,12 +3,8 @@ import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg"
 
 import {
-  ActivityType,
-  AssetCategory,
-  AssetCondition,
-  Criticality,
-  PrismaClient,
   StockMovementType,
+  PrismaClient,
   UserRole,
 } from "../server/generated/prisma/client.js"
 import { hashPassword } from "../server/password.js"
@@ -44,105 +40,6 @@ const cabinets = [
     "Unassigned imported stock",
     true,
   ],
-] as const
-
-const assets = [
-  {
-    id: "20000000-0000-4000-8000-000000000001",
-    assetTag: "ENG/GAS/EQP/26-0001",
-    name: "CNC Milling Machine 01",
-    category: AssetCategory.EQP,
-    manufacturer: "Mazak",
-    model: "VCN-530C",
-    serialNumber: "MZK-530-1842",
-    ownerDepartmentId: departments[0][0],
-    cabinetId: cabinets[0][0],
-    location: "Machining Bay A",
-    acquiredAt: new Date("2021-03-15"),
-    criticality: Criticality.HIGH,
-    condition: AssetCondition.GOOD,
-    notes: "Primary precision machining unit.",
-  },
-  {
-    id: "20000000-0000-4000-8000-000000000002",
-    assetTag: "ENG/GAS/EQP/26-0002",
-    name: "Rotary Screw Compressor 02",
-    category: AssetCategory.EQP,
-    manufacturer: "Atlas Copco",
-    model: "GA 37+",
-    serialNumber: "AC-GA37-9921",
-    ownerDepartmentId: departments[0][0],
-    cabinetId: cabinets[0][0],
-    location: "Utility Room 1",
-    acquiredAt: new Date("2019-08-20"),
-    criticality: Criticality.HIGH,
-    condition: AssetCondition.UNDER_REPAIR,
-    notes: "Bearing inspection in progress.",
-  },
-  {
-    id: "20000000-0000-4000-8000-000000000003",
-    assetTag: "ENG/GAS/EQP/26-0003",
-    name: "Electric Forklift 03",
-    category: AssetCategory.EQP,
-    manufacturer: "Toyota",
-    model: "8FBE20",
-    serialNumber: "TY-8FBE-3712",
-    ownerDepartmentId: departments[0][0],
-    cabinetId: cabinets[0][0],
-    location: "Warehouse Dock",
-    acquiredAt: new Date("2022-01-10"),
-    criticality: Criticality.MEDIUM,
-    condition: AssetCondition.GOOD,
-    notes: null,
-  },
-  {
-    id: "20000000-0000-4000-8000-000000000004",
-    assetTag: "ENG/GAS/EQP/26-0004",
-    name: "Cooling Water Pump 04",
-    category: AssetCategory.EQP,
-    manufacturer: "Grundfos",
-    model: "NB 80-200",
-    serialNumber: "GF-NB80-4408",
-    ownerDepartmentId: departments[0][0],
-    cabinetId: cabinets[0][0],
-    location: "Cooling Plant",
-    acquiredAt: new Date("2018-06-04"),
-    criticality: Criticality.HIGH,
-    condition: AssetCondition.DAMAGED,
-    notes: "Motor winding failure; replacement assessment required.",
-  },
-  {
-    id: "20000000-0000-4000-8000-000000000005",
-    assetTag: "ENG/GAS/TLS/26-0005",
-    name: "Portable Vibration Analyzer",
-    category: AssetCategory.TLS,
-    manufacturer: "Fluke",
-    model: "810",
-    serialNumber: "FL-810-2098",
-    ownerDepartmentId: departments[0][0],
-    cabinetId: cabinets[0][0],
-    location: "Engineering Tool Crib",
-    acquiredAt: new Date("2023-04-18"),
-    criticality: Criticality.MEDIUM,
-    condition: AssetCondition.GOOD,
-    notes: "Shared predictive-maintenance instrument.",
-  },
-  {
-    id: "20000000-0000-4000-8000-000000000006",
-    assetTag: "ENG/GAS/ELK/26-0006",
-    name: "Engineering Workstation 21",
-    category: AssetCategory.ELK,
-    manufacturer: "Lenovo",
-    model: "ThinkPad P1",
-    serialNumber: "LN-P1-8821",
-    ownerDepartmentId: departments[1][0],
-    cabinetId: cabinets[1][0],
-    location: "Engineering Office",
-    acquiredAt: new Date("2024-02-12"),
-    criticality: Criticality.MEDIUM,
-    condition: AssetCondition.GOOD,
-    notes: "CAD workstation assigned to the engineering pool.",
-  },
 ] as const
 
 async function main() {
@@ -192,53 +89,6 @@ async function main() {
       create: { id, code, name, isStaging },
     })
   }
-
-  await prisma.$transaction(async (transaction) => {
-    if ((await transaction.asset.count()) !== 0) return
-
-    for (const asset of assets) {
-      await transaction.asset.create({ data: asset })
-      await transaction.activity.create({
-        data: {
-          id: asset.id.replace(/^2/, "4"),
-          assetId: asset.id,
-          type: ActivityType.REGISTERED,
-          actorName: "System Seed",
-          summary: `${asset.assetTag} registered`,
-        },
-      })
-    }
-
-    await transaction.assetCodeCounter.upsert({
-      where: { year: 2026 },
-      update: { nextNumber: assets.length + 1 },
-      create: { year: 2026, nextNumber: assets.length + 1 },
-    })
-
-    await transaction.loan.create({
-      data: {
-        id: "30000000-0000-4000-8000-000000000001",
-        assetId: assets[4].id,
-        borrowerDepartmentId: departments[3][0],
-        responsiblePerson: "Rina Pratama",
-        purpose: "Production line vibration baseline inspection",
-        destinationLocation: "Production line",
-        checkedOutAt: new Date("2026-07-20"),
-        notes: "Return with charger and magnetic mount.",
-      },
-    })
-
-    await transaction.activity.create({
-      data: {
-        id: "40000000-0000-4000-8000-000000000101",
-        assetId: assets[4].id,
-        type: ActivityType.BORROWED,
-        actorName: "System Seed",
-        summary: `${assets[4].assetTag} borrowed by QA/QC`,
-        metadata: { loanId: "30000000-0000-4000-8000-000000000001" },
-      },
-    })
-  })
 
   const stagingCabinetId = cabinets[4][0]
   for (const row of julyStock) {

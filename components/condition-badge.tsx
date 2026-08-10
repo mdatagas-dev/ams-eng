@@ -7,8 +7,14 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { conditionLabels } from "@/lib/asset-format"
 import type { AssetCondition } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
 
-export function ConditionBadge({ condition }: { condition: AssetCondition }) {
+export async function ConditionBadge({
+  condition,
+}: {
+  condition: AssetCondition
+}) {
+  const lang = await getLang()
   const Icon =
     condition === "GOOD"
       ? RiCheckboxCircleLine
@@ -27,7 +33,7 @@ export function ConditionBadge({ condition }: { condition: AssetCondition }) {
       }
     >
       <Icon data-icon="inline-start" />
-      {conditionLabels[condition]}
+      {conditionLabels(lang)[condition]}
     </Badge>
   )
 }

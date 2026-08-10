@@ -2,6 +2,7 @@
 
 import { RiDatabaseLine, RiRefreshLine } from "@remixicon/react"
 
+import { useI18n } from "@/components/i18n-provider"
 import { Button } from "@/components/ui/button"
 import {
   Empty,
@@ -17,22 +18,20 @@ export default function WorkspaceError({
 }: {
   unstable_retry: () => void
 }) {
+  const { t } = useI18n()
   return (
     <Empty className="min-h-[60vh] border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <RiDatabaseLine />
         </EmptyMedia>
-        <EmptyTitle>Asset data is unavailable</EmptyTitle>
-        <EmptyDescription>
-          Check that the Express API and PostgreSQL database are running, then
-          try again.
-        </EmptyDescription>
+        <EmptyTitle>{t("errorTitle")}</EmptyTitle>
+        <EmptyDescription>{t("errorDescription")}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Button onClick={unstable_retry}>
           <RiRefreshLine data-icon="inline-start" />
-          Try again
+          {t("tryAgain")}
         </Button>
       </EmptyContent>
     </Empty>

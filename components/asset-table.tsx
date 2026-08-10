@@ -25,8 +25,12 @@ import {
 } from "@/components/ui/table"
 import { categoryLabels, formatDate } from "@/lib/asset-format"
 import type { Asset } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
-export function AssetTable({ assets }: { assets: Asset[] }) {
+export async function AssetTable({ assets }: { assets: Asset[] }) {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   if (!assets.length) {
     return (
       <Empty className="border">
@@ -34,10 +38,8 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
           <EmptyMedia variant="icon">
             <RiExchangeBoxLine />
           </EmptyMedia>
-          <EmptyTitle>No matching assets</EmptyTitle>
-          <EmptyDescription>
-            Adjust the filters or register a new asset.
-          </EmptyDescription>
+          <EmptyTitle>{t.tableNoMatches}</EmptyTitle>
+          <EmptyDescription>{t.tableNoMatchesDesc}</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -49,14 +51,14 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Asset</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Owner / location</TableHead>
-              <TableHead>Condition</TableHead>
-              <TableHead>Custody</TableHead>
-              <TableHead>Updated</TableHead>
+              <TableHead>{t.tableAsset}</TableHead>
+              <TableHead>{t.category}</TableHead>
+              <TableHead>{t.tableOwnerLocation}</TableHead>
+              <TableHead>{t.condition}</TableHead>
+              <TableHead>{t.custody}</TableHead>
+              <TableHead>{t.tableUpdated}</TableHead>
               <TableHead className="w-12">
-                <span className="sr-only">Open</span>
+                <span className="sr-only">{t.tableOpen}</span>
               </TableHead>
             </TableRow>
           </TableHeader>
@@ -76,7 +78,7 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
                       {asset.assetTag}
                     </p>
                   </TableCell>
-                  <TableCell>{categoryLabels[asset.category]}</TableCell>
+                  <TableCell>{categoryLabels(lang)[asset.category]}</TableCell>
                   <TableCell>
                     <p>{asset.ownerDepartment.name}</p>
                     <p className="mt-0.5 text-xs text-muted-foreground">
@@ -89,17 +91,17 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
                   <TableCell>
                     {loan ? (
                       <div>
-                        <Badge variant="secondary">Borrowed</Badge>
+                        <Badge variant="secondary">{t.tableBorrowed}</Badge>
                         <p className="mt-1 text-xs text-muted-foreground">
                           {loan.borrowerDepartment.name}
                         </p>
                       </div>
                     ) : (
-                      <Badge variant="outline">Available</Badge>
+                      <Badge variant="outline">{t.available}</Badge>
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {formatDate(asset.updatedAt)}
+                    {formatDate(asset.updatedAt, lang)}
                   </TableCell>
                   <TableCell>
                     <Link
@@ -110,7 +112,9 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
                       })}
                     >
                       <RiArrowRightLine />
-                      <span className="sr-only">Open {asset.name}</span>
+                      <span className="sr-only">
+                        {t.tableOpenNamed.replace("{name}", asset.name)}
+                      </span>
                     </Link>
                   </TableCell>
                 </TableRow>
@@ -133,7 +137,7 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
                 <div className="min-w-0">
                   <p className="truncate font-medium">{asset.name}</p>
                   <p className="mt-0.5 font-mono text-[0.6875rem] text-muted-foreground">
-                    {asset.assetTag} / {categoryLabels[asset.category]}
+                    {asset.assetTag} / {categoryLabels(lang)[asset.category]}
                   </p>
                 </div>
                 <ConditionBadge condition={asset.condition} />
@@ -144,7 +148,12 @@ export function AssetTable({ assets }: { assets: Asset[] }) {
                   <span className="truncate">{asset.location}</span>
                 </div>
                 <div className="text-right text-muted-foreground">
-                  {loan ? `With ${loan.borrowerDepartment.name}` : "Available"}
+                  {loan
+                    ? t.tableWithDepartment.replace(
+                        "{department}",
+                        loan.borrowerDepartment.name
+                      )
+                    : t.available}
                 </div>
               </div>
             </Link>

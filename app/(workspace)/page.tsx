@@ -21,16 +21,24 @@ import {
 } from "@/components/ui/card"
 import { apiGet } from "@/lib/api"
 import type { AssetCondition, DashboardData } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 const cards = [
-  { key: "TOTAL", label: "Registered assets", icon: RiArchiveLine },
-  { key: "GOOD", label: "Baik", icon: RiCheckboxCircleLine },
-  { key: "UNDER_REPAIR", label: "Dalam Perbaikan", icon: RiToolsLine },
-  { key: "DAMAGED", label: "Rusak", icon: RiCloseCircleLine },
-  { key: "BORROWED", label: "Currently borrowed", icon: RiExchangeBoxLine },
+  { key: "TOTAL", labelKey: "dashTotalAssets", icon: RiArchiveLine },
+  { key: "GOOD", labelKey: "conditionGood", icon: RiCheckboxCircleLine },
+  {
+    key: "UNDER_REPAIR",
+    labelKey: "conditionUnderRepair",
+    icon: RiToolsLine,
+  },
+  { key: "DAMAGED", labelKey: "conditionDamaged", icon: RiCloseCircleLine },
+  { key: "BORROWED", labelKey: "dashBorrowedNow", icon: RiExchangeBoxLine },
 ] as const
 
 export default async function DashboardPage() {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   const dashboard = await apiGet<DashboardData>("/dashboard")
   const conditionCounts = Object.fromEntries(
     dashboard.byCondition.map((item) => [item.condition, item._count])
@@ -39,15 +47,15 @@ export default async function DashboardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Operations overview"
-        title="Asset condition center"
-        description="Current equipment condition, custody exposure, and the latest changes across Engineering and IT."
+        eyebrow={t.dashEyebrow}
+        title={t.dashTitle}
+        description={t.dashDescription}
         actions={
           <Link
             href="/assets"
             className={buttonVariants({ variant: "outline" })}
           >
-            Open register
+            {t.openRegister}
             <RiArrowRightLine data-icon="inline-end" />
           </Link>
         }
@@ -55,7 +63,7 @@ export default async function DashboardPage() {
 
       <section
         className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5"
-        aria-label="Asset summary"
+        aria-label={t.dashEyebrow}
       >
         {cards.map((card) => {
           const value =
@@ -68,7 +76,7 @@ export default async function DashboardPage() {
           return (
             <Card key={card.key} size="sm">
               <CardHeader>
-                <CardDescription>{card.label}</CardDescription>
+                <CardDescription>{t[card.labelKey]}</CardDescription>
                 <CardAction>
                   <card.icon className="text-muted-foreground" />
                 </CardAction>
@@ -84,10 +92,8 @@ export default async function DashboardPage() {
       <section className="grid gap-4 xl:grid-cols-[1.35fr_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Condition distribution</CardTitle>
-            <CardDescription>
-              Share of the registered asset population.
-            </CardDescription>
+            <CardTitle>{t.dashConditionDistribution}</CardTitle>
+            <CardDescription>{t.dashDistributionDesc}</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-5">
             {(["GOOD", "UNDER_REPAIR", "DAMAGED"] as const).map((condition) => {
@@ -100,10 +106,10 @@ export default async function DashboardPage() {
                   <div className="flex items-center justify-between gap-3 text-sm">
                     <span>
                       {condition === "GOOD"
-                        ? "Baik"
+                        ? t.conditionGood
                         : condition === "UNDER_REPAIR"
-                          ? "Dalam Perbaikan"
-                          : "Rusak"}
+                          ? t.conditionUnderRepair
+                          : t.conditionDamaged}
                     </span>
                     <span className="font-mono text-xs text-muted-foreground">
                       {count} / {percentage}%
@@ -129,10 +135,8 @@ export default async function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Active custody</CardTitle>
-            <CardDescription>
-              Latest assets checked out to other departments.
-            </CardDescription>
+            <CardTitle>{t.dashActiveCustody}</CardTitle>
+            <CardDescription>{t.dashActiveCustodyDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             {dashboard.activeLoanDetails.length ? (
@@ -153,7 +157,7 @@ export default async function DashboardPage() {
                       </p>
                     </div>
                     <span className="shrink-0 text-xs text-muted-foreground">
-                      {loan.destinationLocation ?? "Location not recorded"}
+                      {loan.destinationLocation ?? t.dashLocationNotRecorded}
                     </span>
                   </Link>
                 ))}
@@ -161,9 +165,9 @@ export default async function DashboardPage() {
             ) : (
               <div className="flex min-h-36 flex-col items-center justify-center gap-2 text-center">
                 <RiCheckboxCircleLine className="text-primary" />
-                <p className="text-sm font-medium">No active borrowing</p>
+                <p className="text-sm font-medium">{t.dashNoActiveBorrowing}</p>
                 <p className="text-xs text-muted-foreground">
-                  All coded assets are in owner custody.
+                  {t.dashAllInOwnerCustody}
                 </p>
               </div>
             )}
@@ -173,16 +177,14 @@ export default async function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent activity</CardTitle>
-          <CardDescription>
-            Latest register, condition, and custody events.
-          </CardDescription>
+          <CardTitle>{t.dashRecentActivity}</CardTitle>
+          <CardDescription>{t.dashRecentActivityDesc}</CardDescription>
           <CardAction>
             <Link
               href="/history"
               className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
-              View all
+              {t.viewAll}
               <RiArrowRightLine data-icon="inline-end" />
             </Link>
           </CardAction>

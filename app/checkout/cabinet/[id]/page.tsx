@@ -3,6 +3,7 @@ import { RiArchiveLine, RiQrCodeLine } from "@remixicon/react"
 import { notFound } from "next/navigation"
 
 import { CabinetCheckoutForm } from "@/components/cabinet-checkout-form"
+import { LanguageToggle } from "@/components/language-toggle"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -21,12 +22,15 @@ import {
 } from "@/components/ui/empty"
 import { ApiRequestError, apiGet } from "@/lib/api"
 import type { CabinetCheckoutData } from "@/lib/inventory-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export default async function CabinetCheckoutPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
+  const t = getDictionary(await getLang())
   const { id } = await params
   let data: CabinetCheckoutData
   try {
@@ -45,13 +49,14 @@ export default async function CabinetCheckoutPage({
               <RiQrCodeLine />
             </div>
             <div>
-              <p className="font-semibold">Engineering Cabinet Checkout</p>
+              <p className="font-semibold">{t.checkoutTitle}</p>
               <p className="text-sm text-muted-foreground">
-                Internal self-service
+                {t.checkoutSubtitle}
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <LanguageToggle />
             <ThemeToggle />
             <Badge variant="outline">{data.cabinet.code}</Badge>
           </div>
@@ -60,12 +65,9 @@ export default async function CabinetCheckoutPage({
         <Card>
           <CardHeader>
             <CardTitle>
-              <h1>Check out from {data.cabinet.name}</h1>
+              <h1>{t.checkoutFrom.replace("{name}", data.cabinet.name)}</h1>
             </CardTitle>
-            <CardDescription>
-              Select one item and quantity. Durable assets are assigned
-              automatically; consumables are permanently issued.
-            </CardDescription>
+            <CardDescription>{t.checkoutDesc}</CardDescription>
           </CardHeader>
           <CardContent>
             {data.items.length ? (
@@ -76,11 +78,8 @@ export default async function CabinetCheckoutPage({
                   <EmptyMedia variant="icon">
                     <RiArchiveLine />
                   </EmptyMedia>
-                  <EmptyTitle>No items available</EmptyTitle>
-                  <EmptyDescription>
-                    This cabinet has no good consumable stock or available coded
-                    assets.
-                  </EmptyDescription>
+                  <EmptyTitle>{t.noItemsAvailable}</EmptyTitle>
+                  <EmptyDescription>{t.noItemsDesc}</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             )}
@@ -88,7 +87,7 @@ export default async function CabinetCheckoutPage({
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          Verify the cabinet and destination before confirming checkout.
+          {t.verifyCheckout}
         </p>
       </div>
     </main>

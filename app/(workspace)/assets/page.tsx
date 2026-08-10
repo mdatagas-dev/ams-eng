@@ -4,12 +4,16 @@ import { AssetTable } from "@/components/asset-table"
 import { PageHeader } from "@/components/page-header"
 import { apiGet } from "@/lib/api"
 import type { Asset, Cabinet, Department } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export default async function AssetsPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   const filters = await searchParams
   const query = new URLSearchParams()
 
@@ -33,9 +37,9 @@ export default async function AssetsPage({
   return (
     <>
       <PageHeader
-        eyebrow="Master data"
-        title="Asset register"
-        description="Search equipment, inspect condition, and see current custody across operating departments."
+        eyebrow={t.assetsEyebrow}
+        title={t.assetsTitle}
+        description={t.assetsDescription}
         actions={
           <AssetFormSheet departments={departments} cabinets={cabinets} />
         }
@@ -49,7 +53,7 @@ export default async function AssetsPage({
           <span className="font-mono font-medium text-foreground">
             {assets.length}
           </span>{" "}
-          assets shown
+          {t.assetsShown}
         </p>
       </div>
       <AssetTable assets={assets} />

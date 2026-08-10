@@ -29,6 +29,8 @@ import {
   formatDate,
 } from "@/lib/asset-format"
 import type { Asset, Cabinet, Department } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 function Detail({ label, value }: { label: string; value: React.ReactNode }) {
   return (
@@ -36,7 +38,7 @@ function Detail({ label, value }: { label: string; value: React.ReactNode }) {
       <dt className="font-mono text-[0.625rem] tracking-wider text-muted-foreground uppercase">
         {label}
       </dt>
-      <dd className="mt-1 text-sm font-medium">{value || "Not recorded"}</dd>
+      <dd className="mt-1 text-sm font-medium">{value}</dd>
     </div>
   )
 }
@@ -46,6 +48,8 @@ export default async function AssetDetailPage({
 }: {
   params: Promise<{ id: string }>
 }) {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   const { id } = await params
   let asset: Asset
   let departments: Department[]
@@ -66,16 +70,19 @@ export default async function AssetDetailPage({
   return (
     <>
       <PageHeader
-        eyebrow={`${asset.assetTag} / ${categoryLabels[asset.category]}`}
+        eyebrow={`${asset.assetTag} / ${categoryLabels(lang)[asset.category]}`}
         title={asset.name}
-        description={`${asset.manufacturer ?? "Unknown manufacturer"}${asset.model ? ` ${asset.model}` : ""}`}
+        description={`${asset.manufacturer ?? t.unknownManufacturer}${asset.model ? ` ${asset.model}` : ""}`}
         actions={
           <div className="flex flex-wrap items-center gap-2">
             <ConditionBadge condition={asset.condition} />
             <Badge variant={activeLoan ? "secondary" : "outline"}>
               {activeLoan
-                ? `With ${activeLoan.borrowerDepartment.name}`
-                : "Available"}
+                ? t.tableWithDepartment.replace(
+                    "{department}",
+                    activeLoan.borrowerDepartment.name
+                  )
+                : t.available}
             </Badge>
           </div>
         }
@@ -90,62 +97,76 @@ export default async function AssetDetailPage({
       <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
         <Tabs defaultValue="overview">
           <TabsList variant="line">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="borrowing">Borrowing</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="overview">{t.tabOverview}</TabsTrigger>
+            <TabsTrigger value="borrowing">{t.tabBorrowing}</TabsTrigger>
+            <TabsTrigger value="history">{t.tabHistory}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="pt-4">
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader>
-                  <CardTitle>Equipment identity</CardTitle>
-                  <CardDescription>
-                    Manufacturer and registration details.
-                  </CardDescription>
+                  <CardTitle>{t.detailIdentity}</CardTitle>
+                  <CardDescription>{t.detailIdentityDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <dl className="flex flex-col gap-3">
-                    <Detail label="Asset tag" value={asset.assetTag} />
-                    <Detail label="Manufacturer" value={asset.manufacturer} />
-                    <Detail label="Model" value={asset.model} />
-                    <Detail label="Serial number" value={asset.serialNumber} />
                     <Detail
-                      label="Acquired"
-                      value={formatDate(asset.acquiredAt)}
+                      label={t.detailAssetTag}
+                      value={asset.assetTag}
+                    />
+                    <Detail
+                      label={t.detailManufacturer}
+                      value={asset.manufacturer ?? t.notRecorded}
+                    />
+                    <Detail
+                      label={t.detailModel}
+                      value={asset.model ?? t.notRecorded}
+                    />
+                    <Detail
+                      label={t.detailSerialNumber}
+                      value={asset.serialNumber ?? t.notRecorded}
+                    />
+                    <Detail
+                      label={t.detailAcquired}
+                      value={formatDate(asset.acquiredAt, lang)}
                     />
                   </dl>
                 </CardContent>
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle>Operational profile</CardTitle>
-                  <CardDescription>
-                    Ownership, location, and current state.
-                  </CardDescription>
+                  <CardTitle>{t.detailProfile}</CardTitle>
+                  <CardDescription>{t.detailProfileDesc}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <dl className="flex flex-col gap-3">
-                    <Detail label="Owner" value={asset.ownerDepartment.name} />
-                    <Detail label="Location" value={asset.location} />
                     <Detail
-                      label="Cabinet"
+                      label={t.detailOwner}
+                      value={asset.ownerDepartment.name}
+                    />
+                    <Detail
+                      label={t.detailLocation}
+                      value={asset.location}
+                    />
+                    <Detail
+                      label={t.detailCabinet}
                       value={
                         asset.cabinet
                           ? `${asset.cabinet.code} / ${asset.cabinet.name}`
-                          : null
+                          : t.notRecorded
                       }
                     />
                     <Detail
-                      label="Category"
-                      value={categoryLabels[asset.category]}
+                      label={t.detailCategory}
+                      value={categoryLabels(lang)[asset.category]}
                     />
                     <Detail
-                      label="Criticality"
-                      value={criticalityLabels[asset.criticality]}
+                      label={t.detailCriticality}
+                      value={criticalityLabels(lang)[asset.criticality]}
                     />
                     <Detail
-                      label="Condition"
+                      label={t.detailCondition}
                       value={<ConditionBadge condition={asset.condition} />}
                     />
                   </dl>
@@ -153,11 +174,11 @@ export default async function AssetDetailPage({
               </Card>
               <Card className="md:col-span-2">
                 <CardHeader>
-                  <CardTitle>Notes</CardTitle>
+                  <CardTitle>{t.detailNotes}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    {asset.notes ?? "No notes recorded for this asset."}
+                    {asset.notes ?? t.detailNoNotes}
                   </p>
                 </CardContent>
               </Card>
@@ -167,43 +188,43 @@ export default async function AssetDetailPage({
           <TabsContent value="borrowing" className="pt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Custody history</CardTitle>
-                <CardDescription>
-                  All department loans for this asset.
-                </CardDescription>
+                <CardTitle>{t.detailCustodyHistory}</CardTitle>
+                <CardDescription>{t.detailCustodyHistoryDesc}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Responsible person</TableHead>
-                      <TableHead>Checked out</TableHead>
-                      <TableHead>Destination</TableHead>
-                      <TableHead>Actual return</TableHead>
+                      <TableHead>{t.detailDepartment}</TableHead>
+                      <TableHead>{t.detailResponsible}</TableHead>
+                      <TableHead>{t.detailCheckedOut}</TableHead>
+                      <TableHead>{t.detailDestination}</TableHead>
+                      <TableHead>{t.detailActualReturn}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {asset.loans.length ? (
                       asset.loans.map((loan) => (
                         <TableRow key={loan.id}>
-                          <TableCell>{loan.borrowerDepartment.name}</TableCell>
-                          <TableCell>{loan.responsiblePerson}</TableCell>
-                          <TableCell>{formatDate(loan.checkedOutAt)}</TableCell>
                           <TableCell>
-                            {loan.destinationLocation ?? "Not recorded"}
+                            {loan.borrowerDepartment.name}
+                          </TableCell>
+                          <TableCell>{loan.responsiblePerson}</TableCell>
+                          <TableCell>{formatDate(loan.checkedOutAt, lang)}</TableCell>
+                          <TableCell>
+                            {loan.destinationLocation ?? t.notRecorded}
                           </TableCell>
                           <TableCell>
                             {loan.returnedAt
-                              ? formatDate(loan.returnedAt)
-                              : "Active"}
+                              ? formatDate(loan.returnedAt, lang)
+                              : t.active}
                           </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
                         <TableCell colSpan={5} className="h-24 text-center">
-                          No borrowing history for this asset.
+                          {t.detailNoBorrowingHistory}
                         </TableCell>
                       </TableRow>
                     )}
@@ -216,10 +237,8 @@ export default async function AssetDetailPage({
           <TabsContent value="history" className="pt-4">
             <Card>
               <CardHeader>
-                <CardTitle>Asset timeline</CardTitle>
-                <CardDescription>
-                  Append-only operational history.
-                </CardDescription>
+                <CardTitle>{t.detailTimeline}</CardTitle>
+                <CardDescription>{t.detailTimelineDesc}</CardDescription>
               </CardHeader>
               <CardContent>
                 <ActivityFeed activities={asset.activities ?? []} />
@@ -231,7 +250,7 @@ export default async function AssetDetailPage({
         <aside className="flex flex-col gap-3">
           <Card size="sm">
             <CardHeader>
-              <CardTitle>Quick facts</CardTitle>
+              <CardTitle>{t.detailQuickFacts}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col gap-3 text-sm">
               <div className="flex items-center gap-2">
@@ -240,7 +259,12 @@ export default async function AssetDetailPage({
               </div>
               <div className="flex items-center gap-2">
                 <RiCalendarLine className="text-muted-foreground" />
-                <span>Updated {formatDate(asset.updatedAt)}</span>
+                <span>
+                  {t.detailUpdatedAt.replace(
+                    "{date}",
+                    formatDate(asset.updatedAt, lang)
+                  )}
+                </span>
               </div>
             </CardContent>
           </Card>

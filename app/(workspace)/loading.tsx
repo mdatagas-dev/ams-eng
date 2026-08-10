@@ -1,9 +1,12 @@
 import { Skeleton } from "@/components/ui/skeleton"
+import { getDictionary } from "@/lib/i18n"
+import { getLang } from "@/lib/get-lang"
 
-export default function Loading() {
+export default async function Loading() {
+  const t = getDictionary(await getLang())
   return (
     <div className="flex flex-col gap-6" role="status" aria-live="polite">
-      <span className="sr-only">Loading asset data</span>
+      <span className="sr-only">{t.loadingAssetData}</span>
       <div className="flex flex-col gap-2 border-b pb-6">
         <Skeleton className="h-3 w-28" />
         <Skeleton className="h-9 w-80 max-w-full" />

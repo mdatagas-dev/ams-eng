@@ -14,17 +14,21 @@ import {
 import { apiGet } from "@/lib/api"
 import { formatDate } from "@/lib/asset-format"
 import type { Loan } from "@/lib/asset-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 export default async function BorrowingsPage() {
+  const lang = await getLang()
+  const t = getDictionary(lang)
   const loans = await apiGet<Loan[]>("/loans")
   const active = loans.filter((loan) => !loan.returnedAt)
 
   return (
     <>
       <PageHeader
-        eyebrow="Custody control"
-        title="Inter-department borrowing"
-        description="Track who holds shared assets, their destination, and completed custody transfers."
+        eyebrow={t.borrowingsEyebrow}
+        title={t.borrowingsTitle}
+        description={t.borrowingsDescription}
       />
       <div className="grid gap-3 sm:grid-cols-3">
         <Card size="sm">
@@ -32,7 +36,7 @@ export default async function BorrowingsPage() {
             <CardTitle className="font-mono text-3xl">
               {active.length}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Active loans</p>
+            <p className="text-xs text-muted-foreground">{t.activeLoans}</p>
           </CardHeader>
         </Card>
         <Card size="sm">
@@ -41,7 +45,7 @@ export default async function BorrowingsPage() {
               {new Set(active.map((loan) => loan.borrowerDepartmentId)).size}
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Borrowing departments
+              {t.borrowingDepartments}
             </p>
           </CardHeader>
         </Card>
@@ -50,25 +54,25 @@ export default async function BorrowingsPage() {
             <CardTitle className="font-mono text-3xl">
               {loans.filter((loan) => loan.returnedAt).length}
             </CardTitle>
-            <p className="text-xs text-muted-foreground">Returned</p>
+            <p className="text-xs text-muted-foreground">{t.returned}</p>
           </CardHeader>
         </Card>
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Borrowing ledger</CardTitle>
+          <CardTitle>{t.borrowingLedger}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Asset</TableHead>
-                  <TableHead>Borrowing department</TableHead>
-                  <TableHead>Responsible person</TableHead>
-                  <TableHead>Checkout</TableHead>
-                  <TableHead>Destination</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>{t.tableAsset}</TableHead>
+                  <TableHead>{t.borrowingDepartment}</TableHead>
+                  <TableHead>{t.detailResponsible}</TableHead>
+                  <TableHead>{t.detailCheckedOut}</TableHead>
+                  <TableHead>{t.detailDestination}</TableHead>
+                  <TableHead>{t.status}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -88,17 +92,20 @@ export default async function BorrowingsPage() {
                       </TableCell>
                       <TableCell>{loan.borrowerDepartment.name}</TableCell>
                       <TableCell>{loan.responsiblePerson}</TableCell>
-                      <TableCell>{formatDate(loan.checkedOutAt)}</TableCell>
+                      <TableCell>{formatDate(loan.checkedOutAt, lang)}</TableCell>
                       <TableCell>
-                        {loan.destinationLocation ?? "Not recorded"}
+                        {loan.destinationLocation ?? t.notRecorded}
                       </TableCell>
                       <TableCell>
                         <Badge
                           variant={loan.returnedAt ? "outline" : "secondary"}
                         >
                           {loan.returnedAt
-                            ? `Returned ${formatDate(loan.returnedAt)}`
-                            : "Active"}
+                            ? t.returnedOn.replace(
+                                "{date}",
+                                formatDate(loan.returnedAt, lang)
+                              )
+                            : t.active}
                         </Badge>
                       </TableCell>
                     </TableRow>
@@ -106,7 +113,7 @@ export default async function BorrowingsPage() {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="h-24 text-center">
-                      No borrowing records yet.
+                      {t.noBorrowingRecords}
                     </TableCell>
                   </TableRow>
                 )}

@@ -10,23 +10,24 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
-export default function AssetNotFound() {
+export default async function AssetNotFound() {
+  const t = getDictionary(await getLang())
   return (
     <Empty className="min-h-[60vh] border">
       <EmptyHeader>
         <EmptyMedia variant="icon">
           <RiArchiveLine />
         </EmptyMedia>
-        <EmptyTitle>Asset not found</EmptyTitle>
-        <EmptyDescription>
-          This asset does not exist or is no longer available in the register.
-        </EmptyDescription>
+        <EmptyTitle>{t.assetNotFound}</EmptyTitle>
+        <EmptyDescription>{t.assetNotFoundDesc}</EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <Link href="/assets" className={buttonVariants()}>
           <RiArrowLeftLine data-icon="inline-start" />
-          Back to register
+          {t.backToRegister}
         </Link>
       </EmptyContent>
     </Empty>

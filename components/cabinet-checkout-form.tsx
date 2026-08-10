@@ -4,6 +4,7 @@ import { useActionState, useState } from "react"
 import { RiCheckboxCircleLine, RiLoaderLine } from "@remixicon/react"
 
 import { checkoutFromCabinet } from "@/app/checkout/actions"
+import { useI18n } from "@/components/i18n-provider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,14 +35,6 @@ function itemKey(item: CabinetCheckoutData["items"][number]) {
     : `asset:${item.category}:${item.name}`
 }
 
-function itemLabel(item: CabinetCheckoutData["items"][number]) {
-  const detail =
-    item.kind === "CONSUMABLE"
-      ? `${item.specification ?? "No specification"} / import row ${item.sourceRow}`
-      : categoryLabels[item.category]
-  return `${item.name} / ${detail} (${item.available} available)`
-}
-
 export function CabinetCheckoutForm({
   data,
   checkoutId,
@@ -49,6 +42,7 @@ export function CabinetCheckoutForm({
   data: CabinetCheckoutData
   checkoutId: string
 }) {
+  const { lang, t } = useI18n()
   const [selectedKey, setSelectedKey] = useState("")
   const [departmentId, setDepartmentId] = useState("")
   const [state, action, pending] = useActionState(
@@ -56,6 +50,13 @@ export function CabinetCheckoutForm({
     initialActionState
   )
   const selected = data.items.find((item) => itemKey(item) === selectedKey)
+  function itemLabel(item: CabinetCheckoutData["items"][number]) {
+    const detail =
+      item.kind === "CONSUMABLE"
+        ? `${item.specification ?? t("noSpecification")} / ${t("importRow").replace("{row}", String(item.sourceRow))}`
+        : categoryLabels(lang)[item.category]
+    return `${item.name} / ${detail} (${t("availableCount").replace("{n}", String(item.available))})`
+  }
   const itemLabels = Object.fromEntries(
     data.items.map((item) => [itemKey(item), itemLabel(item)])
   )
@@ -86,7 +87,7 @@ export function CabinetCheckoutForm({
 
       <FieldGroup>
         <Field>
-          <FieldLabel htmlFor="checkout-item">Item</FieldLabel>
+          <FieldLabel htmlFor="checkout-item">{t("item")}</FieldLabel>
           <Select
             items={itemLabels}
             value={selectedKey}
@@ -98,11 +99,11 @@ export function CabinetCheckoutForm({
             required
           >
             <SelectTrigger id="checkout-item" className="w-full">
-              <SelectValue placeholder="Select an item" />
+              <SelectValue placeholder={t("selectItem")} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Consumables</SelectLabel>
+                <SelectLabel>{t("consumables")}</SelectLabel>
                 {data.items.map((item) =>
                   item.kind === "CONSUMABLE" ? (
                     <SelectItem key={itemKey(item)} value={itemKey(item)}>
@@ -112,7 +113,7 @@ export function CabinetCheckoutForm({
                 )}
               </SelectGroup>
               <SelectGroup>
-                <SelectLabel>Borrowable assets</SelectLabel>
+                <SelectLabel>{t("borrowableAssets")}</SelectLabel>
                 {data.items.map((item) =>
                   item.kind === "DURABLE" ? (
                     <SelectItem key={itemKey(item)} value={itemKey(item)}>
@@ -128,23 +129,23 @@ export function CabinetCheckoutForm({
               <>
                 <Badge variant="outline">
                   {selected.kind === "CONSUMABLE"
-                    ? "Permanent issue"
-                    : categoryLabels[selected.category]}
+                    ? t("permanentIssue")
+                    : categoryLabels(lang)[selected.category]}
                 </Badge>
                 <span>
                   {selected.kind === "CONSUMABLE"
-                    ? "Stock will not be returned."
-                    : "Admin will record the return."}
+                    ? t("stockNotReturned")
+                    : t("adminRecordsReturn")}
                 </span>
               </>
             ) : (
-              "Choose the item stored in this cabinet."
+              t("chooseItem")
             )}
           </FieldDescription>
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="checkout-quantity">Quantity</FieldLabel>
+          <FieldLabel htmlFor="checkout-quantity">{t("quantity")}</FieldLabel>
           <Input
             key={`${selectedKey || "none"}:${departmentId}`}
             id="checkout-quantity"
@@ -157,12 +158,12 @@ export function CabinetCheckoutForm({
             required
           />
           <FieldDescription>
-            Maximum currently available: {available ?? 0}
+            {t("maxAvailable").replace("{n}", String(available ?? 0))}
           </FieldDescription>
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="responsible-person">Your name</FieldLabel>
+          <FieldLabel htmlFor="responsible-person">{t("yourName")}</FieldLabel>
           <Input
             id="responsible-person"
             name="responsiblePerson"
@@ -174,7 +175,9 @@ export function CabinetCheckoutForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="borrower-department">Department</FieldLabel>
+          <FieldLabel htmlFor="borrower-department">
+            {t("department")}
+          </FieldLabel>
           <Select
             items={departmentItems}
             name="borrowerDepartmentId"
@@ -184,7 +187,7 @@ export function CabinetCheckoutForm({
             required
           >
             <SelectTrigger id="borrower-department" className="w-full">
-              <SelectValue placeholder="Select your department" />
+              <SelectValue placeholder={t("selectDepartment")} />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -199,7 +202,7 @@ export function CabinetCheckoutForm({
         </Field>
 
         <Field>
-          <FieldLabel htmlFor="checkout-purpose">Purpose</FieldLabel>
+          <FieldLabel htmlFor="checkout-purpose">{t("purpose")}</FieldLabel>
           <Textarea
             id="checkout-purpose"
             name="purpose"
@@ -212,13 +215,13 @@ export function CabinetCheckoutForm({
 
         <Field>
           <FieldLabel htmlFor="destination-location">
-            Exact destination location
+            {t("exactDestination")}
           </FieldLabel>
           <Input
             id="destination-location"
             name="destinationLocation"
             maxLength={150}
-            placeholder="Building, room, line, or workstation"
+            placeholder={t("destinationPlaceholder")}
             disabled={completed}
             required
           />
@@ -244,7 +247,7 @@ export function CabinetCheckoutForm({
         {pending ? (
           <RiLoaderLine data-icon="inline-start" className="animate-spin" />
         ) : null}
-        {pending ? "Checking out..." : "Confirm checkout"}
+        {pending ? t("checkingOut") : t("confirmCheckout")}
       </Button>
     </form>
   )

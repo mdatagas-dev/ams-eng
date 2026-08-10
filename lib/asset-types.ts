@@ -1,5 +1,5 @@
 export type AssetCondition = "GOOD" | "UNDER_REPAIR" | "DAMAGED"
-export type AssetCategory = "TLS" | "EQP" | "ELK"
+export type AssetCategory = "TLS" | "EQP" | "ELK" | "UNIT_SNI"
 export type Criticality = "LOW" | "MEDIUM" | "HIGH"
 export type ActivityType =
   "REGISTERED" | "UPDATED" | "CONDITION_CHANGED" | "BORROWED" | "RETURNED"

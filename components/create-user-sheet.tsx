@@ -4,6 +4,7 @@ import { useActionState } from "react"
 import { RiAddLine, RiLoaderLine } from "@remixicon/react"
 
 import { createUser } from "@/app/(workspace)/users/actions"
+import { useI18n } from "@/components/i18n-provider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import {
@@ -33,13 +34,13 @@ import {
 } from "@/components/ui/sheet"
 import { initialActionState } from "@/lib/action-state"
 
-const roleItems = { ADMIN: "Admin", SUPER_USER: "Super user" }
-
 export function CreateUserSheet() {
+  const { t } = useI18n()
   const [state, action, pending] = useActionState(
     createUser,
     initialActionState
   )
+  const roleItems = { ADMIN: t("roleAdmin"), SUPER_USER: t("roleSuperUser") }
 
   return (
     <Sheet>
@@ -47,22 +48,20 @@ export function CreateUserSheet() {
         render={
           <Button>
             <RiAddLine data-icon="inline-start" />
-            Add user
+            {t("addUser")}
           </Button>
         }
       />
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Create user account</SheetTitle>
-          <SheetDescription>
-            Admins operate assets. Super users can also manage accounts.
-          </SheetDescription>
+          <SheetTitle>{t("createUserAccount")}</SheetTitle>
+          <SheetDescription>{t("userSheetDesc")}</SheetDescription>
         </SheetHeader>
         <form action={action} className="flex flex-1 flex-col">
           <div className="px-6">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="user-name">Name</FieldLabel>
+                <FieldLabel htmlFor="user-name">{t("name")}</FieldLabel>
                 <Input
                   id="user-name"
                   name="name"
@@ -71,7 +70,9 @@ export function CreateUserSheet() {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="user-username">Username</FieldLabel>
+                <FieldLabel htmlFor="user-username">
+                  {t("username")}
+                </FieldLabel>
                 <Input
                   id="user-username"
                   name="username"
@@ -82,13 +83,11 @@ export function CreateUserSheet() {
                   pattern="[A-Za-z0-9][A-Za-z0-9._-]{2,31}"
                   required
                 />
-                <FieldDescription>
-                  Use 3-32 letters, numbers, dots, underscores, or hyphens.
-                </FieldDescription>
+                <FieldDescription>{t("usernameHint")}</FieldDescription>
               </Field>
               <Field>
                 <FieldLabel htmlFor="user-password">
-                  Temporary password
+                  {t("temporaryPassword")}
                 </FieldLabel>
                 <Input
                   id="user-password"
@@ -98,10 +97,10 @@ export function CreateUserSheet() {
                   minLength={8}
                   required
                 />
-                <FieldDescription>Use 8-128 characters.</FieldDescription>
+                <FieldDescription>{t("passwordHint")}</FieldDescription>
               </Field>
               <Field>
-                <FieldLabel htmlFor="user-role">Role</FieldLabel>
+                <FieldLabel htmlFor="user-role">{t("role")}</FieldLabel>
                 <Select
                   items={roleItems}
                   name="role"
@@ -113,8 +112,10 @@ export function CreateUserSheet() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                      <SelectItem value="SUPER_USER">Super user</SelectItem>
+                      <SelectItem value="ADMIN">{t("roleAdmin")}</SelectItem>
+                      <SelectItem value="SUPER_USER">
+                        {t("roleSuperUser")}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -136,10 +137,10 @@ export function CreateUserSheet() {
                   className="animate-spin"
                 />
               ) : null}
-              {pending ? "Creating..." : "Create user"}
+              {pending ? t("creating") : t("createUser")}
             </Button>
             <SheetClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {t("cancel")}
             </SheetClose>
           </SheetFooter>
         </form>

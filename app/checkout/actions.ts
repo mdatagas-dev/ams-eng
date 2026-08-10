@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache"
 
 import type { ActionState } from "@/lib/action-state"
 import { apiSend } from "@/lib/api"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 
 type CheckoutResult = {
   kind: "CONSUMABLE" | "DURABLE"
@@ -35,9 +37,10 @@ export async function checkoutFromCabinet(
       }
     )
   } catch (error) {
+    const t = getDictionary(await getLang())
     return {
       status: "error",
-      message: error instanceof Error ? error.message : "Checkout failed",
+      message: error instanceof Error ? error.message : t.checkoutFailed,
     }
   }
 
@@ -45,11 +48,13 @@ export async function checkoutFromCabinet(
   revalidatePath("/assets")
   revalidatePath("/borrowings")
   revalidatePath("/history")
-  revalidatePath("/inventory")
   revalidatePath(`/checkout/cabinet/${cabinetId}`)
 
+  const t = getDictionary(await getLang())
   return {
     status: "success",
-    message: `${result.quantity} x ${result.item} checked out successfully.`,
+    message: t.checkoutSuccess
+      .replace("{quantity}", String(result.quantity))
+      .replace("{item}", result.item),
   }
 }

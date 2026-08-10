@@ -5,16 +5,19 @@ import { redirect } from "next/navigation"
 
 import { apiSend, SESSION_COOKIE } from "@/lib/api"
 import type { AuthUser } from "@/lib/auth-types"
+import { getLang } from "@/lib/get-lang"
+import { getDictionary } from "@/lib/i18n"
 import type { LoginState } from "@/lib/login-state"
 
 export async function login(
   _previous: LoginState,
   formData: FormData
 ): Promise<LoginState> {
+  const t = getDictionary(await getLang())
   const username = String(formData.get("username") ?? "").trim()
   const password = String(formData.get("password") ?? "")
   if (!username || !password) {
-    return { error: "Username and password are required" }
+    return { error: t.loginRequired }
   }
 
   let result: { token: string; expiresAt: string; user: AuthUser }
@@ -22,7 +25,7 @@ export async function login(
     result = await apiSend("/auth/login", "POST", { username, password })
   } catch (error) {
     return {
-      error: error instanceof Error ? error.message : "Unable to sign in",
+      error: error instanceof Error ? error.message : t.unableToSignIn,
     }
   }
 

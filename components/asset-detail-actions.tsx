@@ -14,6 +14,7 @@ import {
   returnAsset,
 } from "@/app/(workspace)/actions"
 import { AssetFormSheet } from "@/components/asset-form-sheet"
+import { useI18n } from "@/components/i18n-provider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
@@ -47,10 +48,6 @@ import type {
   Loan,
 } from "@/lib/asset-types"
 
-const conditions = Object.entries(conditionLabels) as Array<
-  [AssetCondition, string]
->
-
 function Feedback({ status, message }: { status: string; message: string }) {
   return message ? (
     <Alert variant={status === "error" ? "destructive" : "default"}>
@@ -60,10 +57,14 @@ function Feedback({ status, message }: { status: string; message: string }) {
 }
 
 function ConditionSheet({ asset }: { asset: Asset }) {
+  const { lang, t } = useI18n()
   const [state, action, pending] = useActionState(
     changeCondition.bind(null, asset.id),
     initialActionState
   )
+  const conditions = Object.entries(conditionLabels(lang)) as Array<
+    [AssetCondition, string]
+  >
 
   return (
     <Sheet>
@@ -71,25 +72,27 @@ function ConditionSheet({ asset }: { asset: Asset }) {
         render={
           <Button variant="outline">
             <RiToolsLine data-icon="inline-start" />
-            Change condition
+            {t("changeCondition")}
           </Button>
         }
       />
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>Change asset condition</SheetTitle>
+          <SheetTitle>{t("changeConditionTitle")}</SheetTitle>
           <SheetDescription>
-            Record the current physical condition of {asset.assetTag}.
+            {t("recordCondition").replace("{tag}", asset.assetTag)}
           </SheetDescription>
         </SheetHeader>
         <form action={action} className="flex flex-1 flex-col">
           <div className="px-6">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="new-condition">New condition</FieldLabel>
+                <FieldLabel htmlFor="new-condition">
+                  {t("newCondition")}
+                </FieldLabel>
                 <Select
                   key={asset.condition}
-                  items={conditionLabels}
+                  items={conditionLabels(lang)}
                   name="condition"
                   defaultValue={asset.condition}
                   required
@@ -110,7 +113,7 @@ function ConditionSheet({ asset }: { asset: Asset }) {
               </Field>
               <Field>
                 <FieldLabel htmlFor="condition-note">
-                  Reason or observation
+                  {t("reasonOrObservation")}
                 </FieldLabel>
                 <Textarea id="condition-note" name="note" rows={4} />
               </Field>
@@ -125,10 +128,10 @@ function ConditionSheet({ asset }: { asset: Asset }) {
                   className="animate-spin"
                 />
               ) : null}
-              Save condition
+              {t("saveCondition")}
             </Button>
             <SheetClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {t("cancel")}
             </SheetClose>
           </SheetFooter>
         </form>
@@ -144,6 +147,7 @@ function BorrowSheet({
   asset: Asset
   departments: Department[]
 }) {
+  const { t } = useI18n()
   const [state, action, pending] = useActionState(
     borrowAsset.bind(null, asset.id),
     initialActionState
@@ -161,23 +165,21 @@ function BorrowSheet({
         render={
           <Button>
             <RiExchangeBoxLine data-icon="inline-start" />
-            Borrow asset
+            {t("borrowAsset")}
           </Button>
         }
       />
       <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
         <SheetHeader>
-          <SheetTitle>Borrow {asset.assetTag}</SheetTitle>
-          <SheetDescription>
-            Assign temporary custody to another department.
-          </SheetDescription>
+          <SheetTitle>{t("borrowTitle").replace("{tag}", asset.assetTag)}</SheetTitle>
+          <SheetDescription>{t("assignCustody")}</SheetDescription>
         </SheetHeader>
         <form action={action} className="flex flex-1 flex-col">
           <div className="px-6">
             <FieldGroup>
               <Field>
                 <FieldLabel htmlFor="borrower-department">
-                  Borrowing department
+                  {t("borrowingDepartment")}
                 </FieldLabel>
                 <Select
                   items={departmentItems}
@@ -201,7 +203,7 @@ function BorrowSheet({
               </Field>
               <Field>
                 <FieldLabel htmlFor="responsiblePerson">
-                  Responsible person
+                  {t("responsiblePerson")}
                 </FieldLabel>
                 <Input
                   id="responsiblePerson"
@@ -210,12 +212,12 @@ function BorrowSheet({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="purpose">Purpose</FieldLabel>
+                <FieldLabel htmlFor="purpose">{t("purpose")}</FieldLabel>
                 <Input id="purpose" name="purpose" required />
               </Field>
               <Field>
                 <FieldLabel htmlFor="destinationLocation">
-                  Destination location
+                  {t("destinationLocation")}
                 </FieldLabel>
                 <Input
                   id="destinationLocation"
@@ -224,7 +226,9 @@ function BorrowSheet({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="checkedOutAt">Checkout date</FieldLabel>
+                <FieldLabel htmlFor="checkedOutAt">
+                  {t("checkoutDate")}
+                </FieldLabel>
                 <Input
                   id="checkedOutAt"
                   name="checkedOutAt"
@@ -233,7 +237,7 @@ function BorrowSheet({
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="borrow-notes">Notes</FieldLabel>
+                <FieldLabel htmlFor="borrow-notes">{t("notes")}</FieldLabel>
                 <Textarea id="borrow-notes" name="notes" rows={3} />
               </Field>
               <Feedback {...state} />
@@ -247,10 +251,10 @@ function BorrowSheet({
                   className="animate-spin"
                 />
               ) : null}
-              Check out asset
+              {t("checkOutAsset")}
             </Button>
             <SheetClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {t("cancel")}
             </SheetClose>
           </SheetFooter>
         </form>
@@ -260,6 +264,7 @@ function BorrowSheet({
 }
 
 function ReturnSheet({ asset, loan }: { asset: Asset; loan: Loan }) {
+  const { t } = useI18n()
   const [state, action, pending] = useActionState(
     returnAsset.bind(null, loan.id, asset.id),
     initialActionState
@@ -271,23 +276,27 @@ function ReturnSheet({ asset, loan }: { asset: Asset; loan: Loan }) {
         render={
           <Button>
             <RiRefreshLine data-icon="inline-start" />
-            Return asset
+            {t("returnAsset")}
           </Button>
         }
       />
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Return {asset.assetTag}</SheetTitle>
+          <SheetTitle>
+            {t("returnTitle").replace("{tag}", asset.assetTag)}
+          </SheetTitle>
           <SheetDescription>
-            Close the loan from {loan.borrowerDepartment.name} and restore owner
-            custody.
+            {t("closeLoan").replace(
+              "{department}",
+              loan.borrowerDepartment.name
+            )}
           </SheetDescription>
         </SheetHeader>
         <form action={action} className="flex flex-1 flex-col">
           <div className="px-6">
             <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="returnedAt">Return date</FieldLabel>
+                <FieldLabel htmlFor="returnedAt">{t("returnDate")}</FieldLabel>
                 <Input
                   id="returnedAt"
                   name="returnedAt"
@@ -297,7 +306,9 @@ function ReturnSheet({ asset, loan }: { asset: Asset; loan: Loan }) {
                 />
               </Field>
               <Field>
-                <FieldLabel htmlFor="return-notes">Return notes</FieldLabel>
+                <FieldLabel htmlFor="return-notes">
+                  {t("returnNotes")}
+                </FieldLabel>
                 <Textarea id="return-notes" name="notes" rows={4} />
               </Field>
               <Feedback {...state} />
@@ -311,10 +322,10 @@ function ReturnSheet({ asset, loan }: { asset: Asset; loan: Loan }) {
                   className="animate-spin"
                 />
               ) : null}
-              Confirm return
+              {t("confirmReturn")}
             </Button>
             <SheetClose render={<Button type="button" variant="outline" />}>
-              Cancel
+              {t("cancel")}
             </SheetClose>
           </SheetFooter>
         </form>
