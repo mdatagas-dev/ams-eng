@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google"
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 
 import "./globals.css"
 import { I18nProvider } from "@/components/i18n-provider"
@@ -31,15 +32,22 @@ export default async function RootLayout({
   children: React.ReactNode
 }>) {
   const lang = await getLang()
+  const theme =
+    (await cookies()).get("ams_theme")?.value === "light" ? "light" : "dark"
   return (
     <html
       lang={lang}
       suppressHydrationWarning
-      className={cn("font-sans antialiased", fontMono.variable, geist.variable)}
+      className={cn(
+        "font-sans antialiased",
+        fontMono.variable,
+        geist.variable,
+        theme === "dark" ? "dark" : ""
+      )}
     >
       <body>
         <I18nProvider lang={lang}>
-          <ThemeProvider>
+          <ThemeProvider initialTheme={theme}>
             <TooltipProvider>{children}</TooltipProvider>
             <Toaster richColors />
           </ThemeProvider>
