@@ -1,6 +1,6 @@
 "use server"
 
-import { cookies } from "next/headers"
+import { cookies, headers } from "next/headers"
 import { redirect } from "next/navigation"
 
 import { apiSend, SESSION_COOKIE } from "@/lib/api"
@@ -30,11 +30,12 @@ export async function login(
   }
 
   const cookieStore = await cookies()
+  const forwardedProto = (await headers()).get("x-forwarded-proto")
   cookieStore.set(SESSION_COOKIE, result.token, {
     httpOnly: true,
     secure:
       process.env.COOKIE_SECURE === undefined
-        ? process.env.NODE_ENV === "production"
+        ? forwardedProto === "https"
         : process.env.COOKIE_SECURE === "true",
     sameSite: "lax",
     path: "/",
