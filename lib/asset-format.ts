@@ -7,7 +7,6 @@ import type {
   ActivityType,
   AssetCategory,
   AssetCondition,
-  Criticality,
 } from "./asset-types"
 
 export function conditionLabels(lang: Language) {
@@ -27,15 +26,6 @@ export function categoryLabels(lang: Language) {
     ELK: d.categoryElk,
     UNIT_SNI: d.categoryUnitSni,
   } as Record<AssetCategory, string>
-}
-
-export function criticalityLabels(lang: Language) {
-  const d = getDictionary(lang)
-  return {
-    LOW: d.criticalityLow,
-    MEDIUM: d.criticalityMedium,
-    HIGH: d.criticalityHigh,
-  } as Record<Criticality, string>
 }
 
 export function activityLabels(lang: Language) {

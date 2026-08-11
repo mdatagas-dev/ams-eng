@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import {
   RiArchiveLine,
@@ -8,7 +9,6 @@ import {
   RiExchangeBoxLine,
   RiHistoryLine,
   RiLogoutBoxRLine,
-  RiPulseLine,
   RiTeamLine,
 } from "@remixicon/react"
 
@@ -104,9 +104,13 @@ export function AppShell({
       <Sidebar collapsible="icon">
         <SidebarHeader className="border-b border-sidebar-border p-4">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-              <RiPulseLine />
-            </div>
+            <Image
+              src="/logo.png"
+              alt=""
+              width={32}
+              height={32}
+              className="size-8 shrink-0 rounded-md object-cover"
+            />
             <div className="min-w-0 group-data-[collapsible=icon]:hidden">
               <p className="truncate text-sm font-semibold">{t("appTitle")}</p>
               <p className="truncate font-mono text-[0.625rem] tracking-wider text-sidebar-foreground/55 uppercase">

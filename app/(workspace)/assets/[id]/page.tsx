@@ -23,11 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { ApiRequestError, apiGet } from "@/lib/api"
-import {
-  categoryLabels,
-  criticalityLabels,
-  formatDate,
-} from "@/lib/asset-format"
+import { categoryLabels, formatDate } from "@/lib/asset-format"
 import type { Asset, Cabinet, Department } from "@/lib/asset-types"
 import { getLang } from "@/lib/get-lang"
 import { getDictionary } from "@/lib/i18n"
@@ -160,10 +156,6 @@ export default async function AssetDetailPage({
                     <Detail
                       label={t.detailCategory}
                       value={categoryLabels(lang)[asset.category]}
-                    />
-                    <Detail
-                      label={t.detailCriticality}
-                      value={criticalityLabels(lang)[asset.criticality]}
                     />
                     <Detail
                       label={t.detailCondition}

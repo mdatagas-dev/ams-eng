@@ -20,12 +20,6 @@ enum AssetCategory {
   UNIT_SNI
 }
 
-enum Criticality {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 enum ActivityType {
   REGISTERED
   UPDATED
@@ -89,7 +83,6 @@ model Asset {
   cabinetId         String?        @db.Uuid
   location          String         @db.VarChar(150)
   acquiredAt        DateTime?      @db.Date
-  criticality       Criticality    @default(MEDIUM)
   condition         AssetCondition @default(GOOD)
   notes             String?        @db.Text
   createdAt         DateTime       @default(now())

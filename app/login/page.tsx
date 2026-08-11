@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation"
+import Image from "next/image"
 
 import { LanguageToggle } from "@/components/language-toggle"
 import { LoginForm } from "@/components/login-form"
@@ -20,7 +21,14 @@ export default async function LoginPage() {
       </div>
       <section className="hidden border-r bg-sidebar p-12 text-sidebar-foreground lg:flex lg:flex-col lg:justify-between">
         <div>
-          <p className="font-mono text-xs tracking-[0.18em] text-sidebar-foreground/60 uppercase">
+          <Image
+            src="/logo.png"
+            alt=""
+            width={64}
+            height={64}
+            className="size-16 rounded-xl object-cover"
+          />
+          <p className="mt-6 font-mono text-xs tracking-[0.18em] text-sidebar-foreground/60 uppercase">
             Engineering + IT
           </p>
           <h1 className="mt-6 max-w-xl text-5xl leading-tight font-semibold tracking-tight">

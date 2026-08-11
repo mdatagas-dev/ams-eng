@@ -36,7 +36,6 @@ import { Textarea } from "@/components/ui/textarea"
 import {
   categoryLabels,
   conditionLabels,
-  criticalityLabels,
 } from "@/lib/asset-format"
 import { initialActionState } from "@/lib/action-state"
 import type {
@@ -44,7 +43,6 @@ import type {
   AssetCategory,
   AssetCondition,
   Cabinet,
-  Criticality,
   Department,
 } from "@/lib/asset-types"
 
@@ -71,9 +69,6 @@ export function AssetFormSheet({
   >
   const conditions = Object.entries(conditionLabels(lang)) as Array<
     [AssetCondition, string]
-  >
-  const criticalities = Object.entries(criticalityLabels(lang)) as Array<
-    [Criticality, string]
   >
   const departmentItems = Object.fromEntries(
     departments.map((department) => [department.id, department.name])
@@ -229,12 +224,12 @@ export function AssetFormSheet({
                 </Field>
               ) : null}
               <Field>
-                <FieldLabel htmlFor="location">{t("homeLocation")}</FieldLabel>
-                <Input
-                  id="location"
+                <FieldLabel>{t("homeLocation")}</FieldLabel>
+                <Input value="Gudang Engineering / IT" readOnly />
+                <input
+                  type="hidden"
                   name="location"
-                  defaultValue={asset?.location}
-                  required
+                  value="Gudang Engineering / IT"
                 />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -279,30 +274,6 @@ export function AssetFormSheet({
                 </Field>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field>
-                  <FieldLabel htmlFor="asset-criticality">
-                    {t("criticality")}
-                  </FieldLabel>
-                  <Select
-                    items={criticalityLabels(lang)}
-                    name="criticality"
-                    defaultValue={asset?.criticality ?? "MEDIUM"}
-                    required
-                  >
-                    <SelectTrigger id="asset-criticality" className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        {criticalities.map(([value, label]) => (
-                          <SelectItem key={value} value={value}>
-                            {label}
-                          </SelectItem>
-                        ))}
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </Field>
                 {!asset ? (
                   <Field>
                     <FieldLabel htmlFor="initial-condition">

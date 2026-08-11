@@ -1,6 +1,5 @@
 export type AssetCondition = "GOOD" | "UNDER_REPAIR" | "DAMAGED"
 export type AssetCategory = "TLS" | "EQP" | "ELK" | "UNIT_SNI"
-export type Criticality = "LOW" | "MEDIUM" | "HIGH"
 export type ActivityType =
   "REGISTERED" | "UPDATED" | "CONDITION_CHANGED" | "BORROWED" | "RETURNED"
 
@@ -56,7 +55,6 @@ export type Asset = {
   cabinetId: string | null
   location: string
   acquiredAt: string | null
-  criticality: Criticality
   condition: AssetCondition
   notes: string | null
   createdAt: string

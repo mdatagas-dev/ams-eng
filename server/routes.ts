@@ -4,7 +4,6 @@ import {
   ActivityType,
   AssetCategory,
   AssetCondition,
-  Criticality,
   Prisma,
   UserRole,
 } from "./generated/prisma/client.js"
@@ -31,7 +30,6 @@ export const api = Router()
 
 const categories = Object.values(AssetCategory)
 const conditions = Object.values(AssetCondition)
-const criticalities = Object.values(Criticality)
 
 const assetInclude = {
   ownerDepartment: true,
@@ -62,7 +60,6 @@ function createAssetData(
     cabinetId: body.cabinetId ? uuid(body.cabinetId, "cabinetId") : null,
     location: text(body, "location", 150),
     acquiredAt: nullableDate(body, "acquiredAt"),
-    criticality: oneOf(body, "criticality", criticalities),
     condition: oneOf(body, "condition", conditions),
     notes: nullableText(body, "notes", 5000),
   }
@@ -86,8 +83,6 @@ function updateAssetData(body: Input): Prisma.AssetUncheckedUpdateInput {
   if (has(body, "location")) data.location = text(body, "location", 150)
   if (has(body, "acquiredAt"))
     data.acquiredAt = nullableDate(body, "acquiredAt")
-  if (has(body, "criticality"))
-    data.criticality = oneOf(body, "criticality", criticalities)
   if (has(body, "notes")) data.notes = nullableText(body, "notes", 5000)
 
   if (!Object.keys(data).length) {

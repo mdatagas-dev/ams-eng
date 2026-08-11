@@ -46,7 +46,6 @@ export async function createAsset(
         "cabinetId",
         "location",
         "acquiredAt",
-        "criticality",
         "condition",
         "notes",
       ])
@@ -78,7 +77,6 @@ export async function updateAsset(
         "cabinetId",
         "location",
         "acquiredAt",
-        "criticality",
         "notes",
         "updatedAt",
       ])
