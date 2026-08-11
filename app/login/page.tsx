@@ -3,21 +3,14 @@ import { redirect } from "next/navigation"
 import { LanguageToggle } from "@/components/language-toggle"
 import { LoginForm } from "@/components/login-form"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { ApiRequestError } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 import { getLang } from "@/lib/get-lang"
 import { getDictionary } from "@/lib/i18n"
 
 export default async function LoginPage() {
   const t = getDictionary(await getLang())
-  let signedIn = false
-  try {
-    await getCurrentUser()
-    signedIn = true
-  } catch (error) {
-    if (!(error instanceof ApiRequestError) || error.status !== 401) throw error
-  }
-  if (signedIn) redirect("/")
+  const user = await getCurrentUser()
+  if (user) redirect("/")
 
   return (
     <main className="relative grid min-h-svh bg-background lg:grid-cols-[1fr_32rem]">

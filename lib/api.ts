@@ -1,6 +1,7 @@
 import "server-only"
 
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 const apiUrl = process.env.API_URL ?? "http://localhost:4000/api"
 export const SESSION_COOKIE = "ams_session"
@@ -19,10 +20,17 @@ export class ApiRequestError extends Error {
   }
 }
 
-export async function apiGet<T>(path: string): Promise<T> {
+export async function apiGet<T>(
+  path: string,
+  options?: { throwOn401?: boolean }
+): Promise<T> {
   const response = await fetch(`${apiUrl}${path}`, {
     headers: await requestHeaders(),
   })
+
+  if (response.status === 401 && !options?.throwOn401) {
+    redirect("/login")
+  }
 
   if (!response.ok) {
     throw new ApiRequestError(response.status)

@@ -2,7 +2,6 @@ import { connection } from "next/server"
 import { redirect } from "next/navigation"
 
 import { AppShell } from "@/components/app-shell"
-import { ApiRequestError } from "@/lib/api"
 import { getCurrentUser } from "@/lib/auth"
 
 export default async function WorkspaceLayout({
@@ -11,13 +10,7 @@ export default async function WorkspaceLayout({
   children: React.ReactNode
 }) {
   await connection()
-  let user
-  try {
-    user = await getCurrentUser()
-  } catch (error) {
-    if (error instanceof ApiRequestError && error.status === 401)
-      redirect("/login")
-    throw error
-  }
+  const user = await getCurrentUser()
+  if (!user) redirect("/login")
   return <AppShell user={user}>{children}</AppShell>
 }

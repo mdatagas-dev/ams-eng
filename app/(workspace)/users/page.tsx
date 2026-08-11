@@ -24,6 +24,7 @@ export default async function UsersPage() {
   const lang = await getLang()
   const t = getDictionary(lang)
   const currentUser = await getCurrentUser()
+  if (!currentUser) redirect("/login")
   if (currentUser.role !== "SUPER_USER") redirect("/")
   const users = await apiGet<ManagedUser[]>("/users")
 
