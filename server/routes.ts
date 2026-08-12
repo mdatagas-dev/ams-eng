@@ -20,6 +20,7 @@ import {
   nullableText,
   oneOf,
   queryText,
+  REGISTERABLE_CATEGORIES,
   text,
   timestamp,
   uuid,
@@ -52,7 +53,7 @@ function createAssetData(
 ): Omit<Prisma.AssetUncheckedCreateInput, "assetTag"> {
   return {
     name: text(body, "name", 150),
-    category: oneOf(body, "category", categories),
+    category: oneOf(body, "category", REGISTERABLE_CATEGORIES),
     manufacturer: nullableText(body, "manufacturer", 100),
     model: nullableText(body, "model", 100),
     serialNumber: nullableText(body, "serialNumber", 100),
