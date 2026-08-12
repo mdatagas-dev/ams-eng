@@ -29,9 +29,15 @@ authRoutes.post("/login", async (request, response) => {
   const body = input(request.body)
   const loginUsername = username(body)
   const password = secret(body, "password", 128)
+  const now = Date.now()
+  // ponytail: O(n) sweep bounds the map to live entries; a shared store with
+  // TTL (Redis, or a DB table) if the API scales horizontally.
+  for (const [key, attempt] of loginAttempts) {
+    if (attempt.resetAt <= now) loginAttempts.delete(key)
+  }
   const key = loginUsername
   const attempt = loginAttempts.get(key)
-  if (attempt && attempt.resetAt > Date.now() && attempt.failures >= 5) {
+  if (attempt && attempt.resetAt > now && attempt.failures >= 5) {
     throw new ApiError(429, "Too many login attempts; try again later")
   }
 

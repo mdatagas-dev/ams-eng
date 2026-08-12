@@ -9,6 +9,7 @@ import {
 } from "./generated/prisma/client.js"
 import { authRoutes, userRoutes } from "./auth-routes.js"
 import { requireAuth, requireRole } from "./auth.js"
+import { jakartaYear } from "./dates.js"
 import { prisma } from "./db.js"
 import { inventoryRoutes, publicInventoryRoutes } from "./inventory-routes.js"
 import {
@@ -171,7 +172,7 @@ api.post("/assets", async (request, response) => {
 
   const asset = await prisma.$transaction(async (transaction) => {
     const now = new Date()
-    const year = now.getUTCFullYear()
+    const year = jakartaYear(now)
     const counter = await transaction.assetCodeCounter.upsert({
       where: { year },
       update: { nextNumber: { increment: 1 } },

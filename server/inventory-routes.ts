@@ -10,6 +10,7 @@ import {
   StockMovementType,
 } from "./generated/prisma/client.js"
 import { prisma } from "./db.js"
+import { jakartaDay } from "./dates.js"
 import { ApiError, has, input, integer, oneOf, text, uuid } from "./input.js"
 
 export const publicInventoryRoutes = Router()
@@ -448,8 +449,7 @@ publicInventoryRoutes.post(
           throw new ApiError(409, "Requested quantity is no longer available")
         }
 
-        const checkedOutAt = new Date()
-        checkedOutAt.setUTCHours(0, 0, 0, 0)
+        const checkedOutAt = jakartaDay(new Date())
         await transaction.loan.createMany({
           data: assets.map((asset) => ({
             id: randomUUID(),

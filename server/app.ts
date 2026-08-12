@@ -14,6 +14,10 @@ app.get("/api/health", (_request, response) => {
 
 app.use("/api", api)
 
+app.use("/api", (_request, response) => {
+  response.status(404).json({ error: "Not found" })
+})
+
 app.use(
   (
     error: unknown,
@@ -70,6 +74,11 @@ app.use(
       response
         .status(409)
         .json({ error: "Concurrent update detected; try again" })
+      return
+    }
+
+    if (code === "P2025") {
+      response.status(404).json({ error: "Record not found" })
       return
     }
 
