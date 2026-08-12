@@ -76,11 +76,6 @@ export function nullableText(value: Input, key: string, maxLength: number) {
   return result || null
 }
 
-// ponytail: UNIT_SNI is display/filter-only — it stays a valid enum value for
-// existing rows and filters, but is not registerable. Drop it from this list if
-// UNIT_SNI ever becomes registerable.
-export const REGISTERABLE_CATEGORIES = ["TLS", "EQP", "ELK"] as const
-
 export function oneOf<T extends string>(
   value: Input,
   key: string,

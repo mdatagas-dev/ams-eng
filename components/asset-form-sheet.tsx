@@ -63,11 +63,9 @@ export function AssetFormSheet({
     action,
     initialActionState
   )
-  // UNIT_SNI is not registerable; it stays in categoryLabels for filters and
-  // for existing assets, which show category as a read-only field.
-  const categories = (
-    Object.entries(categoryLabels(lang)) as Array<[AssetCategory, string]>
-  ).filter(([value]) => value !== "UNIT_SNI")
+  const categories = Object.entries(categoryLabels(lang)) as Array<
+    [AssetCategory, string]
+  >
   const conditions = Object.entries(conditionLabels(lang)) as Array<
     [AssetCondition, string]
   >
@@ -150,7 +148,7 @@ export function AssetFormSheet({
                     />
                   ) : (
                     <Select
-                      items={Object.fromEntries(categories)}
+                      items={categoryLabels(lang)}
                       name="category"
                       defaultValue="TLS"
                       onValueChange={(value) =>
