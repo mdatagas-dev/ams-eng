@@ -61,7 +61,6 @@ function createAssetData(
     location: text(body, "location", 150),
     acquiredAt: nullableDate(body, "acquiredAt"),
     condition: oneOf(body, "condition", conditions),
-    notes: nullableText(body, "notes", 5000),
   }
 }
 
@@ -83,7 +82,6 @@ function updateAssetData(body: Input): Prisma.AssetUncheckedUpdateInput {
   if (has(body, "location")) data.location = text(body, "location", 150)
   if (has(body, "acquiredAt"))
     data.acquiredAt = nullableDate(body, "acquiredAt")
-  if (has(body, "notes")) data.notes = nullableText(body, "notes", 5000)
 
   if (!Object.keys(data).length) {
     throw new ApiError(400, "At least one asset field must be provided")

@@ -47,7 +47,6 @@ export async function createAsset(
         "location",
         "acquiredAt",
         "condition",
-        "notes",
       ])
     )
   } catch (error) {
@@ -77,7 +76,6 @@ export async function updateAsset(
         "cabinetId",
         "location",
         "acquiredAt",
-        "notes",
         "updatedAt",
       ])
     )

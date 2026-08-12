@@ -56,7 +56,6 @@ export type Asset = {
   location: string
   acquiredAt: string | null
   condition: AssetCondition
-  notes: string | null
   createdAt: string
   updatedAt: string
   ownerDepartment: Department

@@ -32,7 +32,6 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { Textarea } from "@/components/ui/textarea"
 import {
   categoryLabels,
   conditionLabels,
@@ -301,15 +300,6 @@ export function AssetFormSheet({
                   </Field>
                 ) : null}
               </div>
-              <Field>
-                <FieldLabel htmlFor="notes">{t("notes")}</FieldLabel>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  defaultValue={asset?.notes ?? ""}
-                  rows={4}
-                />
-              </Field>
               {state.message ? (
                 <Alert
                   variant={state.status === "error" ? "destructive" : "default"}

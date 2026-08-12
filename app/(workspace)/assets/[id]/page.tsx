@@ -164,16 +164,6 @@ export default async function AssetDetailPage({
                   </dl>
                 </CardContent>
               </Card>
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle>{t.detailNotes}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {asset.notes ?? t.detailNoNotes}
-                  </p>
-                </CardContent>
-              </Card>
             </div>
           </TabsContent>
 

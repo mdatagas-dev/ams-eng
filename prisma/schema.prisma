@@ -84,7 +84,6 @@ model Asset {
   location          String         @db.VarChar(150)
   acquiredAt        DateTime?      @db.Date
   condition         AssetCondition @default(GOOD)
-  notes             String?        @db.Text
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
   ownerDepartment   Department     @relation("OwnerDepartment", fields: [ownerDepartmentId], references: [id], onDelete: Restrict)
