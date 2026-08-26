@@ -162,3 +162,19 @@ export function uuid(value: unknown, name = "id") {
 export function queryText(value: unknown) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined
 }
+
+export function queryInt(
+  value: unknown,
+  name: string,
+  min: number,
+  max: number
+) {
+  if (value === undefined) return undefined
+  const raw = typeof value === "string" ? value.trim() : String(value)
+  if (!raw) return undefined
+  const parsed = Number(raw)
+  if (!Number.isSafeInteger(parsed) || parsed < min || parsed > max) {
+    throw new ApiError(400, `${name} must be an integer between ${min} and ${max}`)
+  }
+  return parsed
+}

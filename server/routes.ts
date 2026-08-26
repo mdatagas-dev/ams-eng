@@ -20,6 +20,7 @@ import {
   nullableDate,
   nullableText,
   oneOf,
+  queryInt,
   queryText,
   text,
   timestamp,
@@ -110,6 +111,8 @@ api.get("/assets", async (request, response) => {
   const category = queryText(request.query.category)
   const departmentId = queryText(request.query.departmentId)
   const custody = queryText(request.query.custody)
+  const limit = queryInt(request.query.limit, "limit", 1, 200)
+  const offset = queryInt(request.query.offset, "offset", 0, 100_000)
 
   const where: Prisma.AssetWhereInput = {
     ...(search
@@ -142,6 +145,8 @@ api.get("/assets", async (request, response) => {
     where,
     include: assetInclude,
     orderBy: [{ condition: "asc" }, { assetTag: "asc" }],
+    ...(limit ? { take: limit } : {}),
+    ...(offset ? { skip: offset } : {}),
   })
 
   response.json(assets)
@@ -426,6 +431,8 @@ api.post("/loans/:id/return", async (request, response) => {
 
 api.get("/loans", async (request, response) => {
   const status = queryText(request.query.status)
+  const limit = queryInt(request.query.limit, "limit", 1, 200)
+  const offset = queryInt(request.query.offset, "offset", 0, 100_000)
   const loans = await prisma.loan.findMany({
     where:
       status === "active"
@@ -435,15 +442,20 @@ api.get("/loans", async (request, response) => {
           : {},
     include: { asset: true, borrowerDepartment: true },
     orderBy: [{ returnedAt: "asc" }, { checkedOutAt: "desc" }],
+    ...(limit ? { take: limit } : {}),
+    ...(offset ? { skip: offset } : {}),
   })
   response.json(loans)
 })
 
-api.get("/activities", async (_request, response) => {
+api.get("/activities", async (request, response) => {
+  const limit = queryInt(request.query.limit, "limit", 1, 200) ?? 100
+  const offset = queryInt(request.query.offset, "offset", 0, 100_000)
   const activities = await prisma.activity.findMany({
     include: { asset: { select: { id: true, assetTag: true, name: true } } },
     orderBy: { createdAt: "desc" },
-    take: 100,
+    take: limit,
+    ...(offset ? { skip: offset } : {}),
   })
   response.json(activities)
 })

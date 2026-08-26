@@ -485,6 +485,15 @@ publicInventoryRoutes.post(
       { isolationLevel: Prisma.TransactionIsolationLevel.Serializable }
     )
 
+    // ponytail: fire-and-forget TTL pruning; keeps CheckoutRequest bounded without a cron.
+    void prisma.checkoutRequest
+      .deleteMany({
+        where: {
+          createdAt: { lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        },
+      })
+      .catch(() => {})
+
     response.status(201).json(result)
   }
 )
