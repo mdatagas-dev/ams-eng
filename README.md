@@ -2,22 +2,6 @@
 
 Engineering asset management: condition, custody, and immutable history for equipment across departments. Next.js 16 (App Router) frontend + Express 5 API, Prisma 7 on PostgreSQL. Two separate processes.
 
-## Quickstart (Docker)
-
-```bash
-cp .env.example .env   # set BOOTSTRAP_* passwords before first run
-docker compose up --build
-```
-
-- Web UI: http://localhost:3000
-- API: http://localhost:4000/api
-
-Seed (one-off, creates departments, cabinets, sample assets, and stock):
-
-```bash
-docker compose run --rm web npx tsx prisma/seed.ts
-```
-
 ## Quickstart (local)
 
 Requires Node 20+ and a running PostgreSQL.
@@ -33,6 +17,28 @@ npm run dev:api        # Express API on :4000
 npm run dev            # Next dev server on :3000
 ```
 
+## Production (PM2)
+
+Install PM2 once on the host:
+
+```bash
+npm install --global pm2
+```
+
+Build and start both processes:
+
+```bash
+npm run db:deploy
+npm run db:seed       # optional: bootstrap users + sample data
+npm run build:api
+npm run build
+pm2 start ecosystem.config.cjs
+pm2 save
+```
+
+- Web UI: http://localhost:3000
+- API: http://localhost:4000/api
+
 ## Environment
 
 | Variable | Purpose |
@@ -40,6 +46,7 @@ npm run dev            # Next dev server on :3000
 | `DATABASE_URL` | Postgres connection string (required) |
 | `API_PORT` / `API_HOST` | Express bind address (defaults `4000` / `127.0.0.1`) |
 | `API_URL` | Base URL the Next process uses to reach the API |
+| `COOKIE_SECURE` | Set to `true` when serving through HTTPS |
 | `BOOTSTRAP_SUPERUSER_*` | Name/username/password for the first super-user (seed only) |
 | `BOOTSTRAP_ADMIN_*` | Name/username/password for the first admin (seed only) |
 
